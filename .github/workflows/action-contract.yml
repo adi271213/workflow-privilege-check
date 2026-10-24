@@ -43,12 +43,13 @@ jobs:
         \    git('config','commit.gpgsign','false')\n    path = repo / '.github/workflows/ci.yml'\n    path.parent.mkdir(parents=True)\n\
         \    text = 'on: workflow_dispatch\\npermissions: {}\\njobs:\\n  test:\\n    runs-on: ubuntu-latest\\n    steps:\\\
         n      - run: echo fixture\\n'\n    if case == 'secret-base-unknown':\n        text = text.replace('echo fixture',\
-        \ 'echo ${{ secrets[inputs.which] }}')\n    path.write_text(text)\n    git('add','.'); git('commit','-qm','base');\
-        \ base=git('rev-parse','HEAD')\n    if case == 'secret-partial':\n        text = text.replace('echo fixture', 'echo\
-        \ ${{ secrets.NEW_TOKEN }} ${{ secrets[inputs.which] }}')\n    elif case == 'secret-base-unknown':\n        text =\
-        \ text.replace('${{ secrets[inputs.which] }}', '${{ secrets.NEW_TOKEN }}')\n    else:\n        text = text.replace('permissions:\
-        \ {}', 'permissions: {contents: write}')\n    path.write_text(text)\n    git('commit','-qam','head'); head=git('rev-parse','HEAD')\n\
-        \    if case == 'replace-commit': git('replace',head,base)\n    if case == 'replace-blob':\n        git('replace',git('rev-parse',head+':.github/workflows/ci.yml'),git('rev-parse',base+':.github/workflows/ci.yml'))\n\
+        \ 'echo EXPR_OPEN secrets[inputs.which] }}')\n    path.write_text(text.replace('EXPR_OPEN',chr(36)+'{{'))\n    git('add','.');\
+        \ git('commit','-qm','base'); base=git('rev-parse','HEAD')\n    if case == 'secret-partial':\n        text = text.replace('echo\
+        \ fixture', 'echo EXPR_OPEN secrets.NEW_TOKEN }} EXPR_OPEN secrets[inputs.which] }}')\n    elif case == 'secret-base-unknown':\n\
+        \        text = text.replace('EXPR_OPEN secrets[inputs.which] }}', 'EXPR_OPEN secrets.NEW_TOKEN }}')\n    else:\n\
+        \        text = text.replace('permissions: {}', 'permissions: {contents: write}')\n    path.write_text(text.replace('EXPR_OPEN',chr(36)+'{{'))\n\
+        \    git('commit','-qam','head'); head=git('rev-parse','HEAD')\n    if case == 'replace-commit': git('replace',head,base)\n\
+        \    if case == 'replace-blob':\n        git('replace',git('rev-parse',head+':.github/workflows/ci.yml'),git('rev-parse',base+':.github/workflows/ci.yml'))\n\
         with open(os.environ['GITHUB_OUTPUT'],'a') as f:\n    f.write(f'base={base}\\nhead={head}\\nrepo={repo}\\n')\nPYCODE\n"
     - name: Run pinned Action mode
       id: result
