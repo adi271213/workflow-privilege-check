@@ -62,3 +62,18 @@ all 12 incomplete cases, and ten routine negatives (deduplicate overlap).
 Use exact source evidence and record disagreements and usefulness separately.
 Start any subsequent pilot in advisory mode outside required checks; success is
 whether maintainers find the explanations useful enough to keep.
+
+## Hosted v0.2.1 candidate replay
+
+All 18 [contract jobs](https://github.com/adi271213/workflow-privilege-check/actions/runs/40113060308)
+and 10 updated consumer PR runs (four genuine forks) passed against functional pin
+`50bc69f8d1772a67129635e0814097da6f8d8c11`. The retained log verifier checks the
+downloaded Action SHA, exact inputs, output states, read-only permissions and
+failure-mode behavior. [Machine-readable results](hosted-results.json).
+
+[Updated fork error example](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40124655019)
+shows error/unknown without presenting advisory success as a clean analysis.
+The first reopened consumer runs still used the old pin and are excluded from
+these counts; the PR branches were explicitly updated before this verified replay.
+The fixes remain in [draft PR #1](https://github.com/adi271213/workflow-privilege-check/pull/1)
+for independent review. No maintainer invitations or merge enforcement changes.
