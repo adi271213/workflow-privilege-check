@@ -1,4 +1,4 @@
-# Replace b0fc6b639749c78ebc5e7be37942ef6ecef86446 with the reviewed Action source revision.
+# Replace 50bc69f8d1772a67129635e0814097da6f8d8c11 with the reviewed Action source revision.
 # Pilot only: leave this workflow outside required merge checks.
 name: Workflow privilege review (advisory)
 on:
@@ -31,7 +31,7 @@ jobs:
           test "$(git rev-parse refs/remotes/origin/privilege-head)" = "$EXPECTED_HEAD"
       - name: Report configured changes (advisory)
         id: privilege
-        uses: adi271213/workflow-privilege-check@b0fc6b639749c78ebc5e7be37942ef6ecef86446
+        uses: adi271213/workflow-privilege-check@50bc69f8d1772a67129635e0814097da6f8d8c11
         with:
           mode: advisory
       - name: Explain the result
