@@ -18,7 +18,17 @@ required merge rules; a green workflow is not authorization to merge.
 81 local tests pass. Earlier scanner versions were replayed on 74 public PRs and
 v0.1.1 passed six hosted branch/fork cases, including approval and rendered summaries:
 [hosted test repository](https://github.com/adi271213/workflow-privilege-check-smoke-20261024).
-The new 0.2.0 public-output installation is being tested in a fresh consumer repo.
+The 0.2.0 public-output installation passed 11 consumer PR runs, including four
+real fork runs, mixed incomplete findings, proposed source overrides, and an update
+to an existing PR. Eight additional jobs verify both Action modes, including
+missing commits and output availability after an expected failing step.
+[Clean consumer](https://github.com/adi271213/workflow-privilege-check-pilot-20261024),
+[mode contract run](https://github.com/adi271213/workflow-privilege-check/actions/runs/40110530848).
+The installed consumer workflow matches the public example byte-for-byte and
+contains no scanner implementation or internal test hooks.
+
+The reviewed Action pin for this pilot is
+`b0fc6b639749c78ebc5e7be37942ef6ecef86446`. The example already uses that full SHA.
 Corpus labels need independent human review; maintainer value is unvalidated.
 
 ## Local use

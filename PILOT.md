@@ -21,6 +21,10 @@ fails the step. Keep the pilot workflow outside required merge checks.
 
 ## Install
 
+This recipe is for public repositories. Its explicit fetch uses public read
+access after checkout credentials are removed. Private repositories need a
+separately reviewed authenticated-fetch recipe; that path has not been tested.
+
 Copy `examples/github-action-template.yml` into
 `.github/workflows/workflow-privilege-review.yml` in the pilot repository. Use the
 reviewed full commit SHA of this Action. The example checks out the trusted base,
