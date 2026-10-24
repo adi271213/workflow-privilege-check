@@ -1,0 +1,89 @@
+name: Action outcome contract
+'on': workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    strategy:
+      fail-fast: false
+      matrix:
+        mode:
+        - advisory
+        - require-complete
+        case:
+        - grants
+        - incomplete
+        - error
+        - missing
+    steps:
+    - name: Checkout public consumer objects
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        repository: adi271213/workflow-privilege-check-pilot-20261024
+        ref: 17c331b0529a2f39c6d1db918c8ac876667090c0
+        fetch-depth: 0
+        persist-credentials: false
+    - name: Select fixed input
+      id: refs
+      env:
+        CASE: ${{ matrix.case }}
+      run: "case \"$CASE\" in\n  grants) head=8c9cb54049173221ec1144643d2fc6f444b81b15 ;;\n  incomplete) head=95197686ac86c09e3c5aa5b6a4648c944b3cefbe\
+        \ ;;\n  error) head=50ae76820802d731b68a5101ed9239e6c3dbceac ;;\n  missing) head=0000000000000000000000000000000000000000\
+        \ ;;\n  *) exit 1 ;;\nesac\necho \"head=$head\" >> \"$GITHUB_OUTPUT\"\n"
+    - name: Run pinned Action mode
+      id: result
+      continue-on-error: true
+      uses: adi271213/workflow-privilege-check@b0fc6b639749c78ebc5e7be37942ef6ecef86446
+      with:
+        mode: ${{ matrix.mode }}
+        base: 17c331b0529a2f39c6d1db918c8ac876667090c0
+        head: ${{ steps.refs.outputs.head }}
+    - name: Assert the public outcome contract
+      if: always()
+      env:
+        CASE: ${{ matrix.case }}
+        MODE: ${{ matrix.mode }}
+        STEP_OUTCOME: ${{ steps.result.outcome }}
+        ANALYSIS: ${{ steps.result.outputs.analysis-status }}
+        REVIEW: ${{ steps.result.outputs.review-status }}
+        EXIT_CODE: ${{ steps.result.outputs.analysis-exit-code }}
+        FINDINGS: ${{ steps.result.outputs.finding-count }}
+        REPORT: ${{ steps.result.outputs.report-path }}
+        SUMMARY: ${{ steps.result.outputs.summary-path }}
+      run: 'python3 -I - <<''PYCODE''
+
+        import json, os
+
+        from pathlib import Path
+
+        case, mode = os.environ[''CASE''], os.environ[''MODE'']
+
+        state = ''complete'' if case == ''grants'' else ''incomplete'' if case == ''incomplete'' else ''error''
+
+        review = ''suggested'' if case == ''grants'' else ''unknown''
+
+        expected_outcome = ''failure'' if mode == ''require-complete'' and state != ''complete'' else ''success''
+
+        assert os.environ[''STEP_OUTCOME''] == expected_outcome, (case, mode, os.environ[''STEP_OUTCOME''])
+
+        assert os.environ[''ANALYSIS''] == state
+
+        assert os.environ[''REVIEW''] == review
+
+        assert os.environ[''EXIT_CODE''] == (''0'' if state == ''complete'' else ''2'')
+
+        assert os.environ[''FINDINGS''] == (''4'' if case == ''grants'' else ''0'')
+
+        report = json.loads(Path(os.environ[''REPORT'']).read_text())
+
+        assert report[''analysis''] == state and report[''action''][''reviewStatus''] == review
+
+        assert Path(os.environ[''SUMMARY'']).is_file()
+
+        print(''WPC_CONTRACT_RESULT='' + json.dumps({''case'':case,''mode'':mode,''analysis'':state,''review'':review,''stepOutcome'':os.environ[''STEP_OUTCOME''],''analysisExit'':int(os.environ[''EXIT_CODE'']),''outputsAvailable'':True,''reportsAvailable'':True}))
+
+        PYCODE
+
+        '
