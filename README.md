@@ -1,60 +1,187 @@
-# Workflow Privilege Check — experimental alpha
+# Workflow Privilege Check — experimental Action
 
-A deterministic, offline analysis engine that explains supported GitHub Actions
-configuration changes between exact snapshots. It reports token scope increases,
-new pull_request_target/workflow_run event names, and new per-job secret references.
-It does not establish runtime access, maliciousness, cloud trust, or PR safety.
+A report-only tool that explains supported GitHub Actions configuration changes
+between two snapshots. Built from scratch; no historical scanner implementation
+is included.
 
-Version 0.2.0 adds explicit Action outcomes and an advisory installation. The
-scanner rules and CLI exit behavior are unchanged from v0.1.1.
+**Status:** experimental alpha, v0.2.1. The original 50-PR comparison is available in
+[evidence and limitations](docs/review/README.md); the inherited-default update and 24 unseen PRs
+are documented in [evidence and limitations](docs/review/README.md). All six hosted Action cases passed, including
+genuine fork PRs, contributor approval, and signed-in summary inspection; see
+[evidence and limitations](docs/review/README.md). Marketplace release and independent precision
+validation remain outstanding. Do not require this check for
+merging or use its result to authorize auto-merge during initial evaluation.
 
-Read [PILOT.md](PILOT.md) for the result contract, installation and removal.
-The consumer template is [examples/github-action-template.yml](examples/github-action-template.yml).
-Always pin the Action to a reviewed full commit SHA. Keep pilot checks outside
-required merge rules; a green workflow is not authorization to merge.
+## Advisory pilot
 
-## Evidence
+See [PILOT.md](PILOT.md) for explicit outcomes and the ready-to-copy public
+repository installation. The clean pilot passed 11 consumer PR runs (four from a
+genuine fork), plus eight mode/failure contract jobs. See
+[evidence and limitations](docs/review/README.md). The consumer contains no scanner or
+internal test hooks. Keep this workflow outside required merge checks.
 
-81 local tests pass. Earlier scanner versions were replayed on 74 public PRs and
-v0.1.1 passed six hosted branch/fork cases, including approval and rendered summaries:
-[hosted test repository](https://github.com/adi271213/workflow-privilege-check-smoke-20261024).
-The 0.2.0 public-output installation passed 11 consumer PR runs, including four
-real fork runs, mixed incomplete findings, proposed source overrides, and an update
-to an existing PR. Eight additional jobs verify both Action modes, including
-missing commits and output availability after an expected failing step.
-[Clean consumer](https://github.com/adi271213/workflow-privilege-check-pilot-20261024),
-[mode contract run](https://github.com/adi271213/workflow-privilege-check/actions/runs/40110530848).
-The installed consumer workflow matches the public example byte-for-byte and
-contains no scanner implementation or internal test hooks.
+The Action exports analysis-status, review-status, finding-count,
+analysis-exit-code, report-path, summary-path, base-sha and head-sha. Review is
+unknown when analysis is incomplete/error without known findings. The default
+require-complete mode retains the previous exit behavior; advisory mode makes
+analysis outcomes nonblocking while preserving warnings and explicit status.
+Reporting failures and invalid mode still fail the Action. The CLI is unchanged.
 
-The reviewed Action pin for this pilot is
-`b0fc6b639749c78ebc5e7be37942ef6ecef86446`. The example already uses that full SHA.
-Corpus labels need independent human review; maintainer value is unvalidated.
+## Try it locally
 
-## Local use
-
-Requires Python 3.11+ and PyYAML 6.0.3. Install with `python -m pip install .`, then:
+Requires Python 3.11+ and Git for commit comparisons.
 
 ```sh
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
 workflow-privilege-check scan --dirs examples/base examples/head --format markdown
-workflow-privilege-check scan --repo /path/to/repo --base BASE_SHA --head HEAD_SHA
 ```
 
-The CLI exits 0 for complete reports, including findings; incomplete/error reports
-exit 2. Unknown defaults remain unknown when a comparison needs their values.
-Unchanged inherited permissions for matched jobs compare symbolically under a
-fixed-external-defaults assumption. Dynamic secret selection and YAML aliases
-are unsupported; unavailable/invalid inputs never establish a clean result.
+The included example introduces package publishing, an OIDC token request, a
+privileged trigger, and a secret reference. All findings are suggestions for human
+review; they do not establish maliciousness.
 
-## Input limits and ownership
+Compare exact Git snapshots without checkout:
 
-Only immediate .github/workflows/*.yml and *.yaml files are analyzed. Limits:
-200 workflows/4 MiB per snapshot, 256 KiB per file, 60,000 YAML tokens and 50
-nesting levels. Symlinks, duplicate keys, aliases, merge keys, and unknown scopes
-are rejected. Proposed scripts, remote action bodies, environment protections,
-cloud IAM policies, and existing-trigger filter expansions are outside coverage.
+```sh
+workflow-privilege-check scan --repo /path/to/repository --base BASE_SHA --head HEAD_SHA
+```
 
-The Action is tested on Linux GitHub-hosted runners. It requests no writes,
-comments, cloud calls, or telemetry. PyYAML installation uses hash-verified wheels.
-Reports may include workflow paths and secret names; they do not contain secret
-values discovered from GitHub. See [SECURITY.md](SECURITY.md) and [LICENSE](LICENSE).
+Branch names are accepted by the CLI and resolved to exact commits in the report.
+The supplied base is compared directly; the tool does not substitute a merge base.
+Git replacement refs and caller-provided Git environment overrides are ignored,
+so recorded object IDs identify the workflow bytes being read.
+It does not fetch missing objects or execute scripts, actions, install hooks, or
+other code from the analyzed repository.
+
+For an existing job with the same job ID, unchanged inherited permissions compare
+symbolically: `D -> D` has no configured increase for any fixed default map `D`.
+The report lists these jobs in `inheritedComparisons` and discloses the assumption
+that external repository/organization defaults remain fixed. It does not discover
+their values or verify runtime access. Trigger and secret checks still run.
+
+A new inherited job, a renamed inherited job, or a transition between inherited and explicit
+permissions remains incomplete. Supply explicit defaults from a trusted source
+to resolve those comparisons:
+
+```sh
+workflow-privilege-check scan --dirs examples/base examples/head \
+  --default-permissions '{"contents":"read","packages":"read"}'
+```
+
+That map is an assertion by the operator, not a discovered repository setting.
+No policy or suppression files are loaded from the proposed tree.
+
+## Supported rules
+
+| Rule | What is compared | What is not established |
+|---|---|---|
+| WF001 | Per-job token scope increases, including read increases; workflow settings and job overrides | Runtime token privileges, fork restrictions, cloud authorization |
+| WF003 | New `pull_request_target` and `workflow_run` event names | Exploitability or changes to filters on an existing trigger |
+| WF004 | New per-job literal secret references, workflow-level env references, and whole-secret forwarding | Whether secrets exist, are available, or are actually accessed |
+
+Job identities are their job IDs. A permission copied to another existing job is
+a new finding. Job renames may conservatively appear as new jobs. Exact-content
+workflow file renames are recognized in both directory and Git modes; renames
+combined with edits are conservatively treated as removal plus addition.
+
+Secret names are compared case-insensitively. Literal dot and bracket references
+are supported; dynamic selection is incomplete. Known literal additions are still
+reported when only the head has an unresolved selector. An unresolved selector in
+the base prevents establishing secret additions. Expression string literals are
+ignored. References to `secrets.GITHUB_TOKEN` alone are ignored because the token
+is implicitly available; its configured scopes are covered by WF001.
+
+Workflow-level environment expressions are counted as reference evidence for each
+job. The scanner does not prove data flow or account for every environment-variable
+shadowing case. Changes within the same job that give another step an existing
+secret are outside coverage.
+
+## Result contract
+
+| Analysis | Meaning | Exit |
+|---|---|---|
+| complete, no findings | No supported expansions detected | 0 |
+| complete, findings | Human review suggested | 0 |
+| incomplete | Required context is unavailable | 2 |
+| error | Inputs are unavailable, invalid, unsupported, or over budget | 2 |
+
+Findings may coexist with incomplete analysis. Inspect `analysis` before relying
+on a report. A zero exit code is not a statement that a PR is safe.
+
+JSON includes exact Git SHAs or directory content fingerprints, per-job evidence,
+renames, diagnostics, symbolic inheritance evidence, assumptions, and permanent
+coverage limitations. Use `--output report.json`
+to save JSON, or `--format markdown`. `--summary PATH` explicitly appends Markdown.
+The CLI does not implicitly write GitHub environment files.
+
+## Input and trust boundaries
+
+- Only immediate `.github/workflows/*.yml` and `*.yaml` files are read.
+- Limit: 200 workflows and 4 MiB per snapshot; 256 KiB per file.
+- YAML: at most 60,000 tokens and 50 nesting levels. Aliases and merge keys are
+  explicitly unsupported. Duplicate keys, custom tags, invalid UTF-8, and symlinked
+  workflow inputs are rejected.
+- Errors do not echo workflow source lines or secret values.
+- Analysis is offline. The Action's separate dependency-install step uses PyPI.
+- Read-only comparisons do not enforce approvals or prevent bypass by a PR that
+  removes or changes the calling workflow. Enforcement is a future feature.
+- Scripts, action source, reusable-workflow internals, cloud trust policies,
+  environment protection rules, and existing-trigger filter expansion are not analyzed.
+- The permission vocabulary is explicit and versioned in source; unknown scopes
+  produce an error rather than silently disappearing.
+
+Use a trusted interpreter and installation outside an untrusted checkout. Never
+install or run this scanner from PR-modifiable source during privileged analysis.
+
+## GitHub Action wrapper
+
+`action.yml` and `scripts/run-action.sh` provide a Linux composite wrapper. It
+uses an isolated Python environment, reads PR base/head SHAs, and writes a job
+summary. Both Git objects must already exist locally. It does not post comments
+or request write permissions.
+
+The earlier wrapper passed six hosted pull-request tests. Version 0.2.0 then
+passed the clean pilot and explicit outcome tests documented above, covering
+neutral edits, known grants, incomplete defaults and analysis errors. Dependency
+bootstrap, contributor approval, read-only token context, event SHA delivery,
+summary content and signed-in rendering, and exit handling passed. The tests use
+Linux GitHub-hosted runners and synthetic fixtures; they do not establish universal
+integration safety.
+
+See `examples/github-action-template.yml`. Select the evaluated full commit SHA
+for the version being tested. Do not use `uses: ./` from an untrusted PR
+checkout. A pinned Action protects the scanner version, but a report-only calling
+workflow is not an unbypassable security gate.
+
+## Run validation
+
+```sh
+python scripts/validate.py
+```
+
+This runs the synthetic acceptance matrix plus parser, source-reader, CLI, and local
+Action-entry integration tests. It saves `validation-results.json` with outcomes,
+runtime versions, and source hashes. It requires no cloud credentials or network.
+
+## Next experiment
+
+The initial public-PR comparison found substantial overlap with existing tools.
+The v0.1.1 update reduced incomplete results from 15/50 to 4/50 on that sample and
+from 13/24 to 8/24 on unseen PRs, preserving all 45 finding facts across both
+samples. Labels came from one assistant reviewer; these are regression and
+usability observations, not production recall estimates. Before inviting
+maintainers, obtain independent label review of the benchmark corpus.
+See `VALIDATION.md`. Adoption and production precision remain unvalidated.
+
+The v0.2.1 implementation audit and separate label addendum are in
+[evidence and limitations](docs/review/README.md). This is a second pass by the same assistant,
+not independent human adjudication. Historical labels and benchmark artifacts
+remain frozen. A configured-change signal must not be counted as a vulnerability
+or proof of expanded runtime authority.
+
+Technical references:
+[workflow permissions](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax),
+[secret naming](https://docs.github.com/en/actions/reference/security/secrets),
+[context availability](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts).

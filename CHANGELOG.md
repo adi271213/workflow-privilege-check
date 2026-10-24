@@ -1,5 +1,16 @@
 # Changes
 
+## 0.2.1 — 2026-10-24
+
+- Disable Git object replacement and ignore caller Git environment overrides so
+  exact commit identities cannot silently refer to substituted workflow content.
+- Retain known new literal secret references alongside incomplete head selectors;
+  keep comparisons with unresolved base selectors incomplete without inventing
+  additions.
+- Add regressions for commit/blob replacement, Git environment redirection, and
+  mixed literal/dynamic secret references. Clarify benchmark signal labels and
+  separate configured changes from runtime authority and usefulness.
+
 ## 0.2.0 — 2026-10-24
 
 - Expose explicit analysis/review outcomes, counts, exact commits, and report paths

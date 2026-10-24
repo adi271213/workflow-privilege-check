@@ -1,0 +1,34 @@
+{
+  "checks": {
+    "allInputsVerified": true,
+    "historicalLabelsUnchanged": true,
+    "allExactExpectedFactsMatch": true,
+    "allExpectedAnalysisStatesMatch": true,
+    "noFindingRegressions": true
+  },
+  "summary": {
+    "prs": 74,
+    "labels": {
+      "no-supported-signal": 47,
+      "configured-signal": 20,
+      "unresolved": 7
+    },
+    "analysis": {
+      "complete": 62,
+      "incomplete": 12
+    },
+    "findings": 45
+  },
+  "sourceHashes": {
+    "src/privilege_check/__init__.py": "72e880157a35d2ec9524d50c2280eb1aeb1f3a963275dead580c81cbc431d9ae",
+    "src/privilege_check/sources.py": "1873e62a460f29902bc0152e3e69dab7e2cea99ef69b93d473709858d0f95427",
+    "src/privilege_check/cli.py": "ef909588de0fa50436e7dd5816bdd0c27c48fb2947756b79475a29e88bc1a893",
+    "src/privilege_check/scan.py": "d02ced433a6c47c9e3d243fae4f00232c1eb9e46afc29512803e4798eb0cee57",
+    "src/privilege_check/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "src/privilege_check/report.py": "eafff3ff7e0d6f097b8dce1ca532ba62daf998b642c33d0508d30ca6657e5de5",
+    "scripts/run-action.sh": "c6fb85374fc0c9cb9f1fcc378db98f53f30e0e862c8ad2cdc46871b25f083ae1",
+    "scripts/validate.py": "6dc00cc9b1f84986e1b9801a6463c383dc029ff847758647a6d2258510e93054",
+    "scripts/action_runner.py": "e91979bf8b628d5ee206dc51cf9e0e3d2858d9b42ebe8306343130aeab6733ea",
+    "scripts/action_entry.py": "d59b866703ae859693933eaa87bc8d7f6f8cefaf151577db3c0b69613d02888d"
+  }
+}

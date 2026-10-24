@@ -175,6 +175,21 @@ class Semantics(unittest.TestCase):
         head = BASE.replace("echo fixture", "echo secrets.PUBLISH_TOKEN")
         self.assertEqual(self.scan(head)["findings"], [])
 
+    def test_dynamic_head_keeps_provable_literal_secret_additions(self):
+        base = BASE.replace("echo fixture", "echo ${{ secrets.EXISTING }}")
+        for expression in ("secrets.NEW_TOKEN", "secrets['NEW_TOKEN']", "toJSON(secrets)"):
+            with self.subTest(expression=expression):
+                head = base.replace("echo ${{ secrets.EXISTING }}", "echo ${{ secrets.EXISTING }} ${{ " + expression + " }} ${{ secrets[inputs.which] }}")
+                result = self.scan(head, base)
+                self.assertEqual((result["analysis"], result["review"]), ("incomplete", "suggested"))
+                self.assertEqual([f["after"] for f in result["findings"]], ["all available secrets" if "toJSON" in expression else "NEW_TOKEN"])
+
+    def test_dynamic_base_does_not_invent_secret_additions(self):
+        base = BASE.replace("echo fixture", "echo ${{ secrets[inputs.which] }}")
+        for suffix in ("", " ${{ secrets[inputs.other] }}"):
+            result = self.scan(BASE.replace("echo fixture", "echo ${{ secrets.NEW_TOKEN }}" + suffix), base)
+            self.assertEqual((result["analysis"], result["findings"]), ("incomplete", []))
+
     def test_secret_text_in_expression_string_is_ignored(self):
         head = BASE.replace("echo fixture", "echo ${{ format('secrets.TOKEN') }}")
         self.assertEqual(self.scan(head)["findings"], [])
@@ -333,6 +348,33 @@ class SourcesAndIntegration(unittest.TestCase):
             report = compare(git_snapshot(root, "target"), git_snapshot(root, head))
             self.assertEqual(report["findings"], [])
             self.assertEqual(report["base"], git("rev-parse", "target"))
+
+    def test_git_replacement_refs_cannot_hide_a_grant(self):
+        for replace_kind in ("commit", "blob"):
+            with self.subTest(kind=replace_kind), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                git = self.repo(root)
+                base = git("rev-parse", "HEAD")
+                write(root, {WF: BASE.replace("permissions: {}", "permissions: {contents: write}")})
+                git("commit", "-qam", "grant")
+                head = git("rev-parse", "HEAD")
+                old, new = (base, head) if replace_kind == "commit" else (git("rev-parse", base + ":" + WF), git("rev-parse", head + ":" + WF))
+                git("replace", new, old)
+                report = compare(git_snapshot(root, base), git_snapshot(root, head))
+                self.assertEqual((report["base"], report["head"]), (base, head))
+                self.assertEqual([f["after"] for f in report["findings"]], [{"contents": "write"}])
+
+    def test_git_caller_environment_cannot_redirect_the_repository(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            git = self.repo(root)
+            commit = git("rev-parse", "HEAD")
+            with patch.dict(os.environ, {"GIT_DIR": str(root / "missing"),
+                                        "GIT_WORK_TREE": str(root / "missing"),
+                                        "GIT_CONFIG_COUNT": "not-a-number",
+                                        "GIT_CONFIG_PARAMETERS": "invalid"}):
+                snapshot = git_snapshot(root, commit)
+            self.assertEqual((snapshot.identity, snapshot.files), (commit, {WF: BASE}))
 
     def test_missing_git_ref_errors(self):
         with tempfile.TemporaryDirectory() as tmp:

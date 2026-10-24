@@ -74,11 +74,14 @@ def directory(root: str | Path) -> Snapshot:
 
 
 def _git(repo: str | Path, *args: str) -> bytes:
-    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GIT_NO_LAZY_FETCH": "1",
+    # Honor the explicit repository and immutable object IDs, not caller Git
+    # redirections/config injection or locally installed replacement refs.
+    env = {**{k: v for k, v in os.environ.items() if not k.startswith("GIT_")},
+           "GIT_TERMINAL_PROMPT": "0", "GIT_NO_LAZY_FETCH": "1",
            "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull}
     try:
         result = subprocess.run(
-            ["git", "-c", "core.fsmonitor=false", "-C", str(repo), *args],
+            ["git", "--no-replace-objects", "-c", "core.fsmonitor=false", "-C", str(repo), *args],
             env=env, capture_output=True, timeout=15,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
