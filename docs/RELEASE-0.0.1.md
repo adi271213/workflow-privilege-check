@@ -31,11 +31,13 @@ read-only permission increases still suggest review. The v0.0.0 tag is unchanged
 The earlier [21-case alias packet](ALIAS-VALIDATION.md) covers graph limits,
 cycles, alias equivalence to inline YAML and independent retained findings.
 The release changes version/docs; alias rules and limits are preserved.
-After the final main CI passes, the new tag is checked through a consumer
-installation before the release/Marketplace listing is published. That run is
-recorded in the [release notes](https://github.com/adi271213/workflow-privilege-check/releases/tag/v0.0.1).
+[Main CI](https://github.com/adi271213/workflow-privilege-check/actions/runs/40242662874)
+passed on the release commit. The [tag installation](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40242719818)
+resolved v0.0.1 to that commit and retained eight findings across two aliased jobs.
+The [release](https://github.com/adi271213/workflow-privilege-check/releases/tag/v0.0.1)
+is published on [Marketplace](https://github.com/marketplace/actions/workflow-privilege-check).
 
 Invalid fixture files can also receive GitHub's own validation failures; listed
 consumer jobs verify the analyzer's independent handling of their data. Fixtures
 are never dispatched or merged. No new fork or independent human security audit
-is claimed. No maintainer invitations have been sent.
+is claimed.

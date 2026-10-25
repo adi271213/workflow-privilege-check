@@ -54,4 +54,4 @@ Invalid fixture files can also receive GitHub's own workflow-validation failures
 the listed consumer jobs independently verify the Action's handling of their data.
 Fixtures were never dispatched or merged. No current-version fork run, independent
 human security audit, production precision/recall or maintainer usefulness is claimed.
-PR #6's severity policy is excluded: read increases continue to suggest review.
+Read-only permission increases continue to suggest review.

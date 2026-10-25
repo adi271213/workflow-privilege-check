@@ -1,5 +1,14 @@
 # Changes
 
+## Unreleased
+
+- Preserve runner label/group combinations when comparing matrix selections.
+  Version 0.0.1 can miss changes that rearrange those combinations while leaving
+  the combined labels and groups unchanged.
+- Recognize three additional documented GitHub-hosted runner labels:
+  `ubuntu-22.04-arm`, `windows-11-vs2026-arm` and `xcode-27`.
+- Refresh generated sample reports and remove stale version/release wording.
+
 ## 0.0.1 — 2026-10-26
 
 - Analyze bounded YAML anchors/aliases across permissions, secrets, runner and

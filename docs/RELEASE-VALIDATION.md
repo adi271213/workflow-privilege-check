@@ -1,4 +1,4 @@
-# 0.0.0 release validation
+# 0.0.0 release validation (historical)
 
 Evaluated Action source: `11e29536ed91edf93c00e94f0bf178a5fca759dd`.
 Later setup/evidence commits retain identical runtime, tests and bundled dependency.
@@ -42,5 +42,5 @@ failure; the listed consumer check separately verified correct error reporting.
 No current-version fork or rendered-UI assertion is claimed. Earlier genuine
 fork tests remain historical evidence only. There is no production precision or
 recall estimate, independent human security audit, or maintainer usefulness result.
-No maintainer invitations have been sent. Synthetic tests and replay commands
+Synthetic tests and replay commands
 are documented in [VALIDATION.md](../VALIDATION.md).
