@@ -66,10 +66,13 @@ def parse(text: str) -> dict:
         raise ValueError("Workflow exceeds byte limit.")
     depth = 0
     count = 0
+    aliases = 0
     for token in yaml.scan(text, Loader=StrictLoader):
         count += 1
         if isinstance(token, yaml.tokens.AliasToken):
-            raise ValueError("YAML aliases are unsupported.")
+            aliases += 1
+            if aliases > 500:
+                raise ValueError("Too many YAML aliases.")
         if isinstance(token, (yaml.tokens.BlockMappingStartToken, yaml.tokens.BlockSequenceStartToken,
                               yaml.tokens.FlowMappingStartToken, yaml.tokens.FlowSequenceStartToken)):
             depth += 1
@@ -121,13 +124,20 @@ def _triggers(doc: dict) -> set[str]:
     raise ValueError("Unsupported trigger declaration.")
 
 
-def _expressions(value):
+def _expressions(value, _budget=None):
+    # YAML aliases let a small document expand to many logical nodes; PyYAML shares
+    # the aliased subtree, so bound this walk to keep analysis time finite.
+    if _budget is None:
+        _budget = [0]
+    _budget[0] += 1
+    if _budget[0] > 200000:
+        raise ValueError("Workflow structure is too large to analyze.")
     if isinstance(value, dict):
         for child in value.values():
-            yield from _expressions(child)
+            yield from _expressions(child, _budget)
     elif isinstance(value, list):
         for child in value:
-            yield from _expressions(child)
+            yield from _expressions(child, _budget)
     elif isinstance(value, str):
         start = 0
         while (start := value.find("${{", start)) != -1:

@@ -1,5 +1,11 @@
 # Changes
 
+## Unreleased
+
+- Support YAML anchors and aliases in workflows (previously an error), bounded by an
+  alias-count cap and an expression-walk budget to keep analysis finite. Merge keys
+  remain unsupported.
+
 ## 0.3.0 — 2026-10-25
 
 - Extend WF003 to new `issue_comment`, `issues`, `discussion` and

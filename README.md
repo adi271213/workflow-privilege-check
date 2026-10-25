@@ -87,8 +87,8 @@ exit 2. A zero exit is not a statement that a PR is safe.
 
 - Reads only `.github/workflows/*.yml|*.yaml`; bounds of 200 files / 4 MiB per
   snapshot and 256 KiB per file; analysis is offline and never executes PR code.
-- YAML anchors/merge keys are not yet supported and produce an explicit `error`
-  rather than a silent pass.
+- YAML anchors/aliases are supported within a bounded expansion limit; merge keys
+  remain unsupported (explicit `error`).
 - Scripts, action internals, reusable-workflow bodies, cloud trust policies, and
   existing-trigger filter changes are out of scope.
 - **Early project.** Tested by a synthetic acceptance suite (run `python
