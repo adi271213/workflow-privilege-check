@@ -2,8 +2,11 @@
 
 [![CI](https://github.com/adi271213/workflow-privilege-check/actions/workflows/ci.yml/badge.svg)](https://github.com/adi271213/workflow-privilege-check/actions/workflows/ci.yml)
 
-Version **0.0.0** — an experimental, free, MIT-licensed review aid for GitHub
+An experimental, free, MIT-licensed review aid for GitHub
 Actions configuration changes between a PR's exact base and head commits.
+The latest release is **0.0.0**. The SHA below includes the unreleased bounded-alias
+update; the original `v0.0.0` tag does not include alias support.
+
 It reports selected token, trigger, secret-reference, runner and environment
 changes for a human to inspect. Intended changes are reported too.
 
@@ -19,7 +22,7 @@ out the trusted base and fetches the head as Git data. The Action is pinned to
 the evaluated full commit, not loaded from the proposed checkout.
 
 ```yaml
-- uses: adi271213/workflow-privilege-check@11e29536ed91edf93c00e94f0bf178a5fca759dd # 0.0.0
+- uses: adi271213/workflow-privilege-check@3366fd4e201a1b672408fe93fd7cde2d06912362 # unreleased bounded-alias update
   with:
     mode: advisory
 ```
