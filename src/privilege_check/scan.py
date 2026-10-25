@@ -220,8 +220,8 @@ def compare(base: Snapshot, head: Snapshot, defaults=None) -> dict:
         report["diagnostics"].append({"file": path, "side": side, "job": job,
                                       "kind": "error" if error else "incomplete", "reason": reason})
 
-    def finding(rule, path, job, before, after, message):
-        report["findings"].append({"rule": rule, "file": path, "job": job,
+    def finding(rule, path, job, before, after, message, severity="review"):
+        report["findings"].append({"rule": rule, "file": path, "job": job, "severity": severity,
                                    "before": before, "after": after, "message": message})
 
     if defaults is not None:
@@ -284,8 +284,10 @@ def compare(base: Snapshot, head: Snapshot, defaults=None) -> dict:
                     old, new = values["base"][scope], values["head"][scope]
                     if LEVELS[new] > LEVELS[old]:
                         capability = "request an OIDC identity token" if scope == "id-token" else f"use {scope}: {new}"
+                        severity = "review" if new == "write" else "info"
                         finding("WF001", path, name, {scope: old}, {scope: new},
-                                f"Job {name} is newly configured to {capability}. Runtime access is not verified.")
+                                f"Job {name} is newly configured to {capability}. Runtime access is not verified.",
+                                severity=severity)
             refs = {}
             for side, doc, job in (("base", before, old_job), ("head", after, new_job)):
                 try:
@@ -309,6 +311,6 @@ def compare(base: Snapshot, head: Snapshot, defaults=None) -> dict:
             "Unchanged inherited permissions for matched job IDs compare symbolically, assuming external repository/organization defaults stay fixed. Their values and runtime restrictions are not observed.")
     if report["diagnostics"]:
         report["analysis"] = "error" if any(d["kind"] == "error" for d in report["diagnostics"]) else "incomplete"
-    if report["findings"]:
+    if any(f["severity"] == "review" for f in report["findings"]):
         report["review"] = "suggested"
     return report

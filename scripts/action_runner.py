@@ -70,7 +70,8 @@ def run():
             report = error_report(fallback)
             summary = "## Analysis error\n\n" + fallback + "\n\nNo successful analysis was established.\n"
             code = 2
-        review = "suggested" if report["findings"] else ("none" if report["analysis"] == "complete" else "unknown")
+        has_review = any(f.get("severity", "review") == "review" for f in report["findings"])
+        review = "suggested" if has_review else ("none" if report["analysis"] == "complete" else "unknown")
         # Preserve the scanner report contract; expose uncertainty explicitly in
         # the Action result without changing the core analysis or CLI semantics.
         report["action"] = {"mode": mode, "reviewStatus": review, "analysisExitCode": code}
