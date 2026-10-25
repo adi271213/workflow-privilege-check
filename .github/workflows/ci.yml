@@ -32,3 +32,5 @@ jobs:
           python -I -m pip --isolated install --disable-pip-version-check --only-binary=:all: -r requirements.txt
       - name: Run acceptance, unit, and local integration tests
         run: python scripts/validate.py
+      - name: Run bundled Action without network access
+        run: python scripts/offline_smoke.py --network-namespace

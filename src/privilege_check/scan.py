@@ -1,10 +1,11 @@
-"""Three deliberately limited rules over configured capabilities, per job."""
+"""Deliberately limited rules over configured capabilities and contexts, per job."""
 import copy
 import re
 from typing import Any
 import yaml
 
 from .sources import MAX_FILE, Snapshot
+from .contexts import compare_contexts
 
 LEVELS = {"none": 0, "read": 1, "write": 2}
 SCOPES = {
@@ -28,6 +29,8 @@ LIMITATIONS = [
     "Does not inspect executed scripts, remote actions/workflows, cloud trust, or environment guards.",
     "Trigger filter changes and secret delivery to individual steps are outside coverage.",
     "Trigger review covers selected event names only: " + ", ".join(sorted(REVIEW_TRIGGERS)) + ".",
+    "Runner ownership/inventory and environment secret/protection settings are not observed. Standard runner labels follow a documented convention list.",
+    "Only direct static matrix fields resolve runner/environment expressions; unchanged unresolved selections compare symbolically under fixed external context.",
 ]
 
 
@@ -264,6 +267,14 @@ def compare(base: Snapshot, head: Snapshot, defaults=None) -> dict:
             diagnostic(path, "comparison", str(exc), error=True)
         for name, new_job in sorted(after["jobs"].items()):
             old_job = before["jobs"].get(name)
+            changes, issues, assumptions = compare_contexts(old_job, new_job)
+            for change in changes:
+                finding(change["rule"], path, name, change["before"], change["after"], change["message"])
+            for kind, reason in issues:
+                diagnostic(path, "comparison", reason, job=name, error=kind == "error")
+            for assumption in assumptions:
+                if assumption not in report["assumptions"]:
+                    report["assumptions"].append(assumption)
             values = {}
             for side, doc, job in (("base", before, old_job), ("head", after, new_job)):
                 try:
