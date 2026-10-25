@@ -17,7 +17,7 @@ CI runs the suite on Python 3.11–3.14 for every pull request.
 ## Guidelines
 
 - **Scope:** the tool reports the base→head *privilege delta* in GitHub Actions
-  config (triggers, token scopes, secret references). It is not a general linter —
+  config (triggers, token scopes, secret references, runners and environments). It is not a general linter —
   broad static checks belong in tools like zizmor.
 - **Determinism:** no network or code execution during analysis; same input, same
   output. Keep it that way.
@@ -29,3 +29,7 @@ CI runs the suite on Python 3.11–3.14 for every pull request.
 ## Reporting security issues
 
 See [SECURITY.md](SECURITY.md). Please do not open public issues for vulnerabilities.
+
+See VALIDATION.md for offline Action tests and benchmarks/README.md for the
+hash-pinned historical replay. Runtime dependency updates must preserve vendor
+provenance, license and disconnected-network validation.

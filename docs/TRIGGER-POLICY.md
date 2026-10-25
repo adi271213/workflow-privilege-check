@@ -13,7 +13,7 @@ does not itself grant a write token, make a secret available, or prove an exploi
 | `discussion` | Discussion activity can invoke a default-branch workflow. Review actor checks and use of discussion data. |
 | `discussion_comment` | Discussion comments can invoke a default-branch workflow. Review actor checks and use of comment data. |
 
-All six events are covered as of v0.3.0.
+All six events are covered by the current 0.0.0 initial-version baseline.
 
 ## Boundaries
 
