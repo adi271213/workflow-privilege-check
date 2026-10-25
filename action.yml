@@ -41,6 +41,10 @@ outputs:
   head-sha:
     description: Resolved head commit SHA; empty if inputs could not be resolved.
     value: ${{ steps.report.outputs.head-sha }}
+branding:
+  icon: shield
+  color: purple
+
 runs:
   using: composite
   steps:
