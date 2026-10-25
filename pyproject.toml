@@ -4,7 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "workflow-privilege-check"
-version = "0.0.0"
+version = "0.0.1"
+readme = "README.md"
 description = "Explain supported GitHub Actions privilege changes between two snapshots."
 requires-python = ">=3.11"
 dependencies = ["PyYAML==6.0.3"]
