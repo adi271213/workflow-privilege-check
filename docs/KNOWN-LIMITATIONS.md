@@ -21,5 +21,9 @@ includes the changed targets in WF005 findings. It does not query runner
 inventory or prove that a newly selected runner exists or has more authority.
 The published 0.0.1 tag remains unchanged.
 
+Runner and environment comparisons remain independent. They do not trace
+associations between environment access, secrets and individual runner targets
+across matrix rows.
+
 For the broader supported scope, see [README](../README.md#coverage),
 [runner/environment policy](CONTEXT-POLICY.md) and [YAML policy](YAML-POLICY.md).

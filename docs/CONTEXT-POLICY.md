@@ -47,6 +47,8 @@ row. An equal combined set of labels does not establish equal runner selections.
 When only the combinations change, WF005 includes the individual `targets` in
 its before/after values. Row ordering, duplicates and unrelated matrix fields
 do not create findings. See the [0.0.1 limitation](KNOWN-LIMITATIONS.md).
+Runner and environment selections are compared independently; the tool does not
+trace which environment or secret reaches a particular runner across matrix rows.
 
 A changed unresolved selector is incomplete and still reports the known selector
 change. If an unchanged selector's matrix changes but targets cannot be resolved,
