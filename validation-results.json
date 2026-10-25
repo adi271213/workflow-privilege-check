@@ -1,7 +1,7 @@
 {
   "python": "3.14.6",
   "pyyaml": "6.0.3",
-  "testsRun": 81,
+  "testsRun": 85,
   "failures": 0,
   "errors": 0,
   "results": [
@@ -174,6 +174,14 @@
       "outcome": "passed"
     },
     {
+      "test": "test_mvp.Semantics.test_dynamic_base_does_not_invent_secret_additions",
+      "outcome": "passed"
+    },
+    {
+      "test": "test_mvp.Semantics.test_dynamic_head_keeps_provable_literal_secret_additions",
+      "outcome": "passed"
+    },
+    {
       "test": "test_mvp.Semantics.test_dynamic_secret_and_invalid_yaml_still_fail_closed",
       "outcome": "passed"
     },
@@ -294,7 +302,15 @@
       "outcome": "passed"
     },
     {
+      "test": "test_mvp.SourcesAndIntegration.test_git_caller_environment_cannot_redirect_the_repository",
+      "outcome": "passed"
+    },
+    {
       "test": "test_mvp.SourcesAndIntegration.test_git_records_exact_commits_without_checkout",
+      "outcome": "passed"
+    },
+    {
+      "test": "test_mvp.SourcesAndIntegration.test_git_replacement_refs_cannot_hide_a_grant",
       "outcome": "passed"
     },
     {
@@ -332,21 +348,21 @@
   ],
   "scope": "Local synthetic acceptance and Git/Action-entry integration tests. No hosted Actions run or real-PR benchmark.",
   "sourceHashes": {
-    "src/privilege_check/__init__.py": "5dd5a01443d8e4564a7d55ad77ee21a9b498afc1fe14619e6cec35250e4ae4c1",
+    "src/privilege_check/__init__.py": "72e880157a35d2ec9524d50c2280eb1aeb1f3a963275dead580c81cbc431d9ae",
     "src/privilege_check/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
     "src/privilege_check/cli.py": "ef909588de0fa50436e7dd5816bdd0c27c48fb2947756b79475a29e88bc1a893",
     "src/privilege_check/report.py": "eafff3ff7e0d6f097b8dce1ca532ba62daf998b642c33d0508d30ca6657e5de5",
-    "src/privilege_check/scan.py": "b95c76427e6872789d7f2358acae568b13e631af33c045794581387d1b6c08e7",
-    "src/privilege_check/sources.py": "d295366b515fdc2b29f43e1c688c9a157c96af3dc837fc69f3b0bf1c96cc4fe2",
+    "src/privilege_check/scan.py": "d02ced433a6c47c9e3d243fae4f00232c1eb9e46afc29512803e4798eb0cee57",
+    "src/privilege_check/sources.py": "1873e62a460f29902bc0152e3e69dab7e2cea99ef69b93d473709858d0f95427",
     "scripts/action_entry.py": "d59b866703ae859693933eaa87bc8d7f6f8cefaf151577db3c0b69613d02888d",
     "scripts/action_runner.py": "e91979bf8b628d5ee206dc51cf9e0e3d2858d9b42ebe8306343130aeab6733ea",
     "scripts/run-action.sh": "c6fb85374fc0c9cb9f1fcc378db98f53f30e0e862c8ad2cdc46871b25f083ae1",
     "scripts/validate.py": "6dc00cc9b1f84986e1b9801a6463c383dc029ff847758647a6d2258510e93054",
     "tests/cases.json": "11f128a9e9648b411af49c1b5ad3a4d1e32f36aa21f2800fcfa32ed3ec25ad5a",
     "tests/test_action_outcomes.py": "ec46fecd9f4998e20adde7ca5b18c4831a119623c14101d62761bc014462df6a",
-    "tests/test_mvp.py": "a68f310d5cd3e052a4f9e221fd03ee4ca94edf3f42deced1375fa1d4b4b4da90",
+    "tests/test_mvp.py": "a3eb2cf8c4a6596935511a8b66f1d57e44606cb33628082c28020b2995a74dcd",
     "action.yml": "e22bc5104f5562420195fb1d191289e6533bb657c88762e73d74a848fe06d42f",
     "requirements.txt": "fa0d01435ef8e0f118fba81599ffe9fbde122c3a9d36192a096f5427aedaab7c",
-    "pyproject.toml": "0ff847ec4b22461c02cb5799e868a755ca00992b2a8f16407f706b2ac2678922"
+    "pyproject.toml": "e82fb62fb194e4ce13c8efd864ee717d5418955a4fd2a98c899bfa547a60cdb2"
   }
 }

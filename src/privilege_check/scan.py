@@ -21,7 +21,7 @@ TOKEN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 LIMITATIONS = [
     "Compares supported configured capabilities, not actual runtime access or PR safety.",
     "Does not inspect executed scripts, remote actions/workflows, cloud trust, or environment guards.",
-    "Trigger filter changes and secret delivery to individual steps are outside v0.1 coverage.",
+    "Trigger filter changes and secret delivery to individual steps are outside coverage.",
 ]
 
 
@@ -63,7 +63,7 @@ def parse(text: str) -> dict:
     for token in yaml.scan(text, Loader=StrictLoader):
         count += 1
         if isinstance(token, yaml.tokens.AliasToken):
-            raise ValueError("YAML aliases are unsupported in v0.1.")
+            raise ValueError("YAML aliases are unsupported.")
         if isinstance(token, (yaml.tokens.BlockMappingStartToken, yaml.tokens.BlockSequenceStartToken,
                               yaml.tokens.FlowMappingStartToken, yaml.tokens.FlowSequenceStartToken)):
             depth += 1
@@ -288,7 +288,10 @@ def compare(base: Snapshot, head: Snapshot, defaults=None) -> dict:
                         diagnostic(path, side, "Dynamic secret selection cannot be resolved.", job=name)
                 except ValueError as exc:
                     diagnostic(path, side, str(exc), job=name, error=True)
-            if len(refs) == 2 and not any(v[1] for v in refs.values()):
+            # An unresolved head selector does not erase known new literal
+            # references. An unresolved base could already name any head secret,
+            # so no addition can be established from that comparison.
+            if len(refs) == 2 and not refs["base"][1]:
                 old, new = refs["base"][0], refs["head"][0]
                 added = set() if "*" in old else ({"*"} if "*" in new else new - old)
                 for secret in sorted(added):
