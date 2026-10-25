@@ -4,8 +4,7 @@
 
 An experimental, free, MIT-licensed review aid for GitHub
 Actions configuration changes between a PR's exact base and head commits.
-The latest release is **0.0.0**. The SHA below includes the unreleased bounded-alias
-update; the original `v0.0.0` tag does not include alias support.
+Version **0.0.1** includes bounded YAML anchor/alias support.
 
 It reports selected token, trigger, secret-reference, runner and environment
 changes for a human to inspect. Intended changes are reported too.
@@ -16,13 +15,13 @@ auto-merge. Keep it outside required merge checks during the advisory pilot.
 
 ## Install
 
-Use the [complete setup guide](PILOT.md) and
+Use the [complete setup guide](SETUP.md) and
 [copy-ready workflow](examples/github-action-template.yml). The workflow checks
 out the trusted base and fetches the head as Git data. The Action is pinned to
 the evaluated full commit, not loaded from the proposed checkout.
 
 ```yaml
-- uses: adi271213/workflow-privilege-check@3366fd4e201a1b672408fe93fd7cde2d06912362 # unreleased bounded-alias update
+- uses: adi271213/workflow-privilege-check@ed5248238b1f88d06cb76e9bfa6427e09567f743 # v0.0.1
   with:
     mode: advisory
 ```
@@ -95,7 +94,7 @@ the tool does not guess repository defaults. Unchanged inherited values for
 matched job IDs compare symbolically under a disclosed fixed-default assumption.
 
 CI covers Python 3.11–3.14 and exercises the Action in a disconnected network
-namespace. [Release checks](docs/RELEASE-VALIDATION.md) and [validation method](VALIDATION.md) separate synthetic tests, hosted
+namespace. [Release checks](docs/RELEASE-0.0.1.md) and [validation method](VALIDATION.md) separate synthetic tests, hosted
 installation checks and the [74-PR historical regression replay](benchmarks/README.md).
 The replay is selected and self-labeled; it is not production precision/recall.
 Maintainer usefulness and independent human security validation remain unproven.

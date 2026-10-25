@@ -19,8 +19,8 @@ Three different checks answer different questions:
 
 A hosted consumer test additionally exercises the public pinned composite Action,
 trusted-base checkout, exact head fetch and result interpretation. The published
-0.0.0 setup is selected only after candidate consumer tests, both mode contracts
-and CI pass. Current run links are retained in [release verification notes](docs/RELEASE-VALIDATION.md).
+0.0.1 setup is selected only after candidate consumer tests, both mode contracts
+and CI pass. Current run links are retained in [release verification notes](docs/RELEASE-0.0.1.md).
 Earlier fork runs belong to earlier revisions and are not claimed as new-version
 fork validation. No human security audit or maintainer usefulness result is claimed.
 
@@ -30,4 +30,4 @@ inspection, and bounded expression/matrix support. See the policies linked from
 README. An incomplete/error outcome is not a clean analysis even when advisory
 execution succeeds. Findings alone do not block merges.
 
-The unreleased bounded-alias update has separate [validation evidence](docs/ALIAS-VALIDATION.md).
+The pre-release bounded-alias update has separate [validation evidence](docs/ALIAS-VALIDATION.md).
