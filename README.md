@@ -90,7 +90,7 @@ the tool does not guess repository defaults. Unchanged inherited values for
 matched job IDs compare symbolically under a disclosed fixed-default assumption.
 
 CI covers Python 3.11–3.14 and exercises the Action in a disconnected network
-namespace. [Validation method](VALIDATION.md) separates synthetic tests, hosted
+namespace. [Release checks](docs/RELEASE-VALIDATION.md) and [validation method](VALIDATION.md) separate synthetic tests, hosted
 installation checks and the [74-PR historical regression replay](benchmarks/README.md).
 The replay is selected and self-labeled; it is not production precision/recall.
 Maintainer usefulness and independent human security validation remain unproven.
