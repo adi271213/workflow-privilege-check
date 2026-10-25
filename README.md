@@ -4,21 +4,23 @@ A report-only tool that explains supported GitHub Actions configuration changes
 between two snapshots. Built from scratch; no historical scanner implementation
 is included.
 
-**Status:** experimental alpha, v0.2.1. The original 50-PR comparison is available in
-[evidence and limitations](docs/review/README.md); the inherited-default update and 24 unseen PRs
-are documented in [evidence and limitations](docs/review/README.md). All six hosted Action cases passed, including
-genuine fork PRs, contributor approval, and signed-in summary inspection; see
-[evidence and limitations](docs/review/README.md). Marketplace release and independent precision
-validation remain outstanding. Do not require this check for
-merging or use its result to authorize auto-merge during initial evaluation.
+**Status:** experimental alpha, v0.2.1 candidate. The tested functional Action pin
+is `50bc69f8d1772a67129635e0814097da6f8d8c11`: **18 hosted contract jobs and
+10 consumer PR runs passed, including four genuine fork PRs**. Expected
+incomplete/error cases passed by reporting uncertainty; they are not clean
+analyses. See [evidence and limitations](docs/review/README.md) for exact revisions,
+run links, historical results, and the 74-PR benchmark.
+
+A [separate reviewer agent](docs/review/separate-agent/REPORT.md) found no blocking
+issue and agreed with the 45 configured facts in the 38-case review packet.
+This is not human validation or a production precision estimate. Do not require
+this check for merging or use its result to authorize auto-merge during evaluation.
 
 ## Advisory pilot
 
 See [PILOT.md](PILOT.md) for explicit outcomes and the ready-to-copy public
-repository installation. The clean pilot passed 11 consumer PR runs (four from a
-genuine fork), plus eight mode/failure contract jobs. See
-[evidence and limitations](docs/review/README.md). The consumer contains no scanner or
-internal test hooks. Keep this workflow outside required merge checks.
+repository installation used by the tested consumer runs. The consumer contains
+no scanner or internal test hooks. Keep this workflow outside required merge checks.
 
 The Action exports analysis-status, review-status, finding-count,
 analysis-exit-code, report-path, summary-path, base-sha and head-sha. Review is
@@ -142,8 +144,7 @@ uses an isolated Python environment, reads PR base/head SHAs, and writes a job
 summary. Both Git objects must already exist locally. It does not post comments
 or request write permissions.
 
-The earlier wrapper passed six hosted pull-request tests. Version 0.2.0 then
-passed the clean pilot and explicit outcome tests documented above, covering
+The tested v0.2.1 pin passed the hosted tests documented above, covering
 neutral edits, known grants, incomplete defaults and analysis errors. Dependency
 bootstrap, contributor approval, read-only token context, event SHA delivery,
 summary content and signed-in rendering, and exit handling passed. The tests use
@@ -170,16 +171,16 @@ runtime versions, and source hashes. It requires no cloud credentials or network
 The initial public-PR comparison found substantial overlap with existing tools.
 The v0.1.1 update reduced incomplete results from 15/50 to 4/50 on that sample and
 from 13/24 to 8/24 on unseen PRs, preserving all 45 finding facts across both
-samples. Labels came from one assistant reviewer; these are regression and
-usability observations, not production recall estimates. Before inviting
-maintainers, obtain independent label review of the benchmark corpus.
+samples. The original labels came from the implementing assistant; a separate
+reviewer agent re-adjudicated the 38-case packet without disagreement. These are
+regression and usability observations, not production recall estimates.
 See `VALIDATION.md`. Adoption and production precision remain unvalidated.
 
 The v0.2.1 implementation audit and separate label addendum are in
-[evidence and limitations](docs/review/README.md). This is a second pass by the same assistant,
-not independent human adjudication. Historical labels and benchmark artifacts
-remain frozen. A configured-change signal must not be counted as a vulnerability
-or proof of expanded runtime authority.
+[evidence and limitations](docs/review/README.md), alongside the subsequent separate
+agent review. Neither review is human adjudication or a blinded evaluation.
+Historical labels and benchmark artifacts remain frozen. A configured-change
+signal must not be counted as a vulnerability or proof of expanded runtime authority.
 
 Technical references:
 [workflow permissions](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax),

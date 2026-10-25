@@ -54,14 +54,27 @@ fork PRs with contributor approval, and eight mode/failure contract jobs.
 Those runs used b0fc6b639749c78ebc5e7be37942ef6ecef86446. They do not by themselves
 validate the v0.2.1 revision; its hosted replay is documented separately below.
 
-## Before invitations
+## Separate agent review and pilot readiness
 
-Obtain a different engineer's review of the Git reader, expression handling,
-Action trust boundary, and benchmark judgments. Start with all 20 positives,
-all 12 incomplete cases, and ten routine negatives (deduplicate overlap).
-Use exact source evidence and record disagreements and usefulness separately.
-Start any subsequent pilot in advisory mode outside required checks; success is
-whether maintainers find the explanations useful enough to keep.
+At the user's request, a [separate reviewer agent](separate-agent/REPORT.md)
+reviewed PR #1 at `97c83338c0100b5998729770465d3bd72e19a0a2`, the surrounding
+implementation and Action trust boundary, and all 38 selected cases: all 20
+positives, all 12 incomplete cases, and ten routine negatives, deduplicated.
+It found no blocking security/correctness issue, agreed with all 45 exact facts,
+and verified the 85 local tests and retained hosted evidence. The original
+history/labels were available; this was not blinded or human validation.
+
+The reviewer requested one P3 correction: make the README opening identify the
+current pin and 18 + 10 hosted counts instead of mixing historical revisions.
+That documentation correction is applied. The tested functional code is unchanged.
+See [case adjudications](separate-agent/case-review.csv) and
+[verification summary](separate-agent/verification-summary.json).
+
+No reproduced engineering issue remains open before a small public-repository
+advisory pilot. Human review can add assurance but has not been performed. Start
+with about three maintainers and keep the workflow outside required checks;
+success is whether the explanations are useful enough to keep. Maintainer
+usefulness and production precision remain unmeasured.
 
 ## Hosted v0.2.1 candidate replay
 
@@ -76,4 +89,5 @@ shows error/unknown without presenting advisory success as a clean analysis.
 The first reopened consumer runs still used the old pin and are excluded from
 these counts; the PR branches were explicitly updated before this verified replay.
 The fixes remain in [draft PR #1](https://github.com/adi271213/workflow-privilege-check/pull/1)
-for independent review. No maintainer invitations or merge enforcement changes.
+with the separate agent review recorded above. No maintainer invitations or
+merge enforcement changes.
