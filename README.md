@@ -1,118 +1,104 @@
 # Workflow Privilege Check
 
 [![CI](https://github.com/adi271213/workflow-privilege-check/actions/workflows/ci.yml/badge.svg)](https://github.com/adi271213/workflow-privilege-check/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**An advisory PR check that flags when a change to your GitHub Actions config
-*increases* privilege** — a newly added privileged trigger, a widened workflow
-token, or a new secret reference. It compares the pull request's base and head and
-reports only what the change *added*, so capability-neutral workflow PRs can be
-fast-pathed and the few that expand privilege get a human.
+Catch pull requests that **escalate your GitHub Actions privileges** — a newly
+added `pull_request_target`, a token widened to `write`, an `id-token`/OIDC grant,
+or a newly referenced secret — and route them to a human. Capability-neutral
+workflow PRs pass automatically.
 
-> **Status:** experimental alpha. Advisory only — do not make it a required merge
-> check or auto-merge authorizer yet. Validation to date is author-run, not
-> independent (see [Evidence](docs/review/README.md)).
+It is deterministic, read-only, and runs no workflow code. Unlike static linters,
+which audit the *current* state of your files, it reports the **base→head diff**:
+what a pull request *adds*. A pre-existing `pull_request_target` is normal; a PR
+that introduces one is worth a look.
 
-## Why this exists (and how it differs from zizmor)
+## How it fits with your other tools
 
-Static linters like [zizmor](https://github.com/zizmorcore/zizmor) are excellent
-and **broader than this tool** — they audit the *current state* of your workflows
-for many issue classes (template injection, untrusted checkout, unpinned actions,
-excessive permissions, and more). Run zizmor; most teams should.
+Run [zizmor](https://github.com/zizmorcore/zizmor) for broad static analysis —
+template injection, untrusted checkout, unpinned actions, and more. This tool is a
+**complement**, not a replacement: it answers the one question a state linter can't
+— *did this PR make the pipeline more privileged than before?* — which is exactly
+what you want for review routing and safe auto-merge. It does **not** detect
+template injection, malicious scripts, or compromised upstream actions.
 
-This tool answers a different, narrow question a state linter structurally can't:
+## Usage
 
-> **Did *this PR* make the pipeline more privileged than before?**
+Add an advisory check to pull requests. It writes a job summary and sets a status;
+it never blocks a merge on its own and requests only `contents: read`.
 
-A pre-existing `pull_request_target` is normal; a PR that *adds* one is a signal.
-Because the check is a base→head **diff**, it stays quiet on accepted existing
-config and fires only on the delta — which makes it usable for **review routing**
-and safely fast-pathing the capability-neutral majority of workflow PRs.
-
-It is a **complement, not a replacement**. It does **not** detect template
-injection, untrusted-checkout exploits, unpinned actions, malicious `run:` scripts,
-or compromised upstream actions. Use zizmor (and pinning/Socket) for those.
-
-## Try it
-
-Requires Python 3.11+ and Git.
-
-```sh
-python3 -m venv .venv && source .venv/bin/activate
-python -m pip install -e .
-workflow-privilege-check scan --dirs examples/base examples/head --format markdown
+```yaml
+- uses: adi271213/workflow-privilege-check@v0.3.0
+  with:
+    mode: advisory   # non-blocking; omit to fail the step on incomplete/error
 ```
 
-The bundled example adds package publishing, an OIDC token request, a privileged
-trigger, and a secret reference — all reported as suggestions for human review.
+The Action needs both the base and head commits available in the checkout. See
+[`examples/github-action-template.yml`](examples/github-action-template.yml) for the
+complete, hardened workflow (it checks out the trusted base and fetches the PR head
+as data). To **enforce**, make the Action's status a required check in branch
+protection — a report-only workflow is intentionally not a self-enforcing gate.
 
-Compare exact Git commits without a checkout (objects must already exist locally):
+### Example report
+
+```markdown
+## Review suggested
+
+| Rule  | Workflow   | Job     | Change |
+|-------|------------|---------|--------|
+| WF003 | release.yml| —       | Privileged trigger `pull_request_target` introduced. |
+| WF001 | release.yml| publish | Job `publish` newly requests an OIDC identity token. |
+| WF001 | release.yml| publish | Job `publish` newly uses `packages: write`.          |
+| WF004 | release.yml| publish | Job `publish` adds a reference to secret `PUBLISH_TOKEN`. |
+```
+
+## Command line
+
+Requires Python 3.11+ and Git. Install from source:
 
 ```sh
+pip install -e .
+# Compare two directories:
+workflow-privilege-check scan --dirs examples/base examples/head --format markdown
+# Compare exact commits in a local repo (no checkout, no network):
 workflow-privilege-check scan --repo /path/to/repo --base BASE_SHA --head HEAD_SHA
 ```
 
-## Supported rules
+For jobs that inherit token defaults, pass the trusted defaults to resolve
+otherwise-incomplete comparisons:
+`--default-permissions '{"contents":"read"}'`.
 
-| Rule | Flags when a PR… | Does **not** establish |
-|---|---|---|
-| **WF001** | increases a per-job token scope (e.g. `contents: write`, `id-token: write`), incl. read increases | runtime token privileges, fork restrictions, cloud authorization |
+## What it reports
+
+| Rule | Flags when a PR… | Does not establish |
+|------|------------------|--------------------|
+| **WF001** | increases a per-job token scope (`contents: write`, `id-token: write`, …), including read increases | runtime token privileges, fork restrictions, cloud authorization |
 | **WF003** | adds a review-sensitive trigger (`pull_request_target`, `workflow_run`, `issue_comment`, `issues`, `discussion`, `discussion_comment`) | exploitability, actor checks, or filter changes on an existing trigger — see [trigger policy](docs/TRIGGER-POLICY.md) |
 | **WF004** | adds a secret reference, workflow-env reference, or `secrets: inherit` forwarding | whether the secret exists, is available, or is actually used |
 
-A new trigger does not automatically grant write access; these are **review
-prompts**, not vulnerability claims.
+A new trigger does not automatically grant write access; findings are review
+prompts, not vulnerability claims.
 
-## Result contract
+**Result contract:** `complete` with no findings → exit 0 (no increase detected);
+`complete` with findings → exit 0 (review suggested); `incomplete` or `error` →
+exit 2. A zero exit is not a statement that a PR is safe.
 
-| Analysis | Meaning | Exit |
-|---|---|---|
-| `complete`, no findings | no supported privilege increase detected | 0 |
-| `complete`, findings | human review suggested | 0 |
-| `incomplete` | required context unavailable (e.g. inherited defaults unknown) | 2 |
-| `error` | input invalid, unsupported, or over budget | 2 |
+## Scope & limitations
 
-A zero exit is **not** a statement that a PR is safe. For jobs that inherit token
-defaults, pass `--default-permissions '{"contents":"read"}'` (a trusted operator
-assertion) to resolve otherwise-incomplete comparisons.
+- Reads only `.github/workflows/*.yml|*.yaml`; bounds of 200 files / 4 MiB per
+  snapshot and 256 KiB per file; analysis is offline and never executes PR code.
+- YAML anchors/merge keys are not yet supported and produce an explicit `error`
+  rather than a silent pass.
+- Scripts, action internals, reusable-workflow bodies, cloud trust policies, and
+  existing-trigger filter changes are out of scope.
+- **Early project.** Tested by a synthetic acceptance suite (run `python
+  scripts/validate.py`; CI covers Python 3.11–3.14) and a 74-PR regression replay.
+  It has not yet been validated in production — real-world PRs and feedback welcome.
 
-## GitHub Action
+## Contributing
 
-`action.yml` is a read-only Linux composite wrapper: it reads the PR base/head
-SHAs, writes a job summary, requests no write permissions, and posts no comments.
-See [`examples/github-action-template.yml`](examples/github-action-template.yml)
-and [PILOT.md](PILOT.md). Pin it to a full commit SHA; never run `uses: ./` from an
-untrusted PR checkout. A report-only workflow is not an unbypassable gate.
-
-## Limitations & trust boundary
-
-- Reads only `.github/workflows/*.yml|*.yaml`. Bounds: 200 files / 4 MiB per
-  snapshot, 256 KiB per file; YAML capped at 60k tokens / 50 levels.
-- **YAML aliases and merge keys are unsupported** and produce an explicit `error`
-  (not a silent pass) — anchor-using workflows aren't analyzed yet. Duplicate keys,
-  custom tags, invalid UTF-8, and symlinked inputs are rejected.
-- Analysis is offline and never executes workflow code; the Action's dependency
-  install step uses PyPI. Errors never echo workflow source or secret values.
-- Scripts, action internals, reusable-workflow bodies, cloud trust policies,
-  environment protection rules, and existing-trigger filter changes are out of scope.
-- Run from a trusted install, never from PR-modifiable source during analysis.
-
-## Validation & evidence
-
-Honest status: the implementation, benchmark labels, and a second "reviewer-agent"
-pass were all produced by the same assistant — this is **not** independent human
-review or a production precision/recall estimate. A frozen 74-PR replay preserves
-all expected findings as a regression guard. Details, boundaries, and known gaps:
-[docs/review/README.md](docs/review/README.md).
-
-Run the local suite (synthetic acceptance + parser/reader/CLI/Action-entry tests,
-no network or credentials):
-
-```sh
-python scripts/validate.py
-```
-
-CI runs it on Python 3.11–3.14 for pushes to `main` and pull requests.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and pull requests are welcome.
 
 ## License
 
-[MIT](LICENSE). Security policy: [SECURITY.md](SECURITY.md).
+[MIT](LICENSE) · Security policy: [SECURITY.md](SECURITY.md)

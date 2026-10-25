@@ -1,5 +1,6 @@
-# Replace b3a6401e90f873e192c9d423ece5a44bc22ed44e with the reviewed Action source revision.
-# Pilot only: leave this workflow outside required merge checks.
+# Advisory workflow-privilege review on pull requests.
+# Checks out the trusted base and fetches the PR head as data; never runs PR code.
+# Pin to a release tag (recommended) or a full commit SHA.
 name: Workflow privilege review (advisory)
 on:
   pull_request:
@@ -31,7 +32,7 @@ jobs:
           test "$(git rev-parse refs/remotes/origin/privilege-head)" = "$EXPECTED_HEAD"
       - name: Report configured changes (advisory)
         id: privilege
-        uses: adi271213/workflow-privilege-check@b3a6401e90f873e192c9d423ece5a44bc22ed44e
+        uses: adi271213/workflow-privilege-check@v0.3.0
         with:
           mode: advisory
       - name: Explain the result

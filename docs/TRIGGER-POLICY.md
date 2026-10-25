@@ -13,10 +13,7 @@ does not itself grant a write token, make a secret available, or prove an exploi
 | `discussion` | Discussion activity can invoke a default-branch workflow. Review actor checks and use of discussion data. |
 | `discussion_comment` | Discussion comments can invoke a default-branch workflow. Review actor checks and use of comment data. |
 
-All six events are covered by the evaluated pilot Action pin
-`b3a6401e90f873e192c9d423ece5a44bc22ed44e`. The earlier pin
-`50bc69f8d1772a67129635e0814097da6f8d8c11` covered only the first two. This is a
-commit-pinned pilot extension, without a new tagged package release.
+All six events are covered as of v0.3.0.
 
 ## Boundaries
 
