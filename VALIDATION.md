@@ -24,8 +24,10 @@ and CI pass. Current run links are retained in [release verification notes](docs
 Earlier fork runs belong to earlier revisions and are not claimed as new-version
 fork validation. No human security audit or maintainer usefulness result is claimed.
 
-Known limitations include unsupported YAML aliases/merge keys, edited-rename
+Known limitations include YAML merge keys and over-budget/recursive aliases, edited-rename
 noise, no execution analysis, no cloud authorization or remote environment-policy
 inspection, and bounded expression/matrix support. See the policies linked from
 README. An incomplete/error outcome is not a clean analysis even when advisory
 execution succeeds. Findings alone do not block merges.
+
+The unreleased bounded-alias update has separate [validation evidence](docs/ALIAS-VALIDATION.md).

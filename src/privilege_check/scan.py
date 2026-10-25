@@ -6,6 +6,7 @@ import yaml
 
 from .sources import MAX_FILE, Snapshot
 from .contexts import compare_contexts
+from .yaml_limits import MAX_ALIASES, validate_graph
 
 LEVELS = {"none": 0, "read": 1, "write": 2}
 SCOPES = {
@@ -69,10 +70,13 @@ def parse(text: str) -> dict:
         raise ValueError("Workflow exceeds byte limit.")
     depth = 0
     count = 0
+    aliases = 0
     for token in yaml.scan(text, Loader=StrictLoader):
         count += 1
         if isinstance(token, yaml.tokens.AliasToken):
-            raise ValueError("YAML aliases are unsupported.")
+            aliases += 1
+            if aliases > MAX_ALIASES:
+                raise ValueError("Too many YAML aliases.")
         if isinstance(token, (yaml.tokens.BlockMappingStartToken, yaml.tokens.BlockSequenceStartToken,
                               yaml.tokens.FlowMappingStartToken, yaml.tokens.FlowSequenceStartToken)):
             depth += 1
@@ -81,7 +85,13 @@ def parse(text: str) -> dict:
             depth -= 1
         if depth > 50 or count > 60000:
             raise ValueError("YAML structure exceeds limits.")
-    document = yaml.load(text, Loader=StrictLoader)
+    loader = StrictLoader(text)
+    try:
+        node = loader.get_single_node()
+        validate_graph(node)
+        document = loader.construct_document(node) if node is not None else None
+    finally:
+        loader.dispose()
     if not isinstance(document, dict) or not isinstance(document.get("jobs"), dict) or not document["jobs"]:
         raise ValueError("Workflow needs a nonempty jobs mapping.")
     if "on" not in document:
@@ -124,13 +134,20 @@ def _triggers(doc: dict) -> set[str]:
     raise ValueError("Unsupported trigger declaration.")
 
 
-def _expressions(value):
+def _expressions(value, _budget=None):
+    # YAML aliases let a small document expand to many logical nodes; PyYAML shares
+    # the aliased subtree, so bound this walk to keep analysis time finite.
+    if _budget is None:
+        _budget = [0]
+    _budget[0] += 1
+    if _budget[0] > 200000:
+        raise ValueError("Workflow structure is too large to analyze.")
     if isinstance(value, dict):
         for child in value.values():
-            yield from _expressions(child)
+            yield from _expressions(child, _budget)
     elif isinstance(value, list):
         for child in value:
-            yield from _expressions(child)
+            yield from _expressions(child, _budget)
     elif isinstance(value, str):
         start = 0
         while (start := value.find("${{", start)) != -1:

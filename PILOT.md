@@ -1,4 +1,4 @@
-# Install the 0.0.0 advisory pilot
+# Install the advisory pilot
 
 Use one public repository you maintain that already runs GitHub Actions. Keep
 ordinary review and existing scanners. This tool reports configured changes;
@@ -12,7 +12,7 @@ Copy [the complete workflow](examples/github-action-template.yml) to
 step is already pinned to this evaluated source:
 
 ```text
-adi271213/workflow-privilege-check@11e29536ed91edf93c00e94f0bf178a5fca759dd
+adi271213/workflow-privilege-check@3366fd4e201a1b672408fe93fd7cde2d06912362
 ```
 
 Keep `mode: advisory`, `contents: read`, the trusted-base checkout, exact head
@@ -85,5 +85,7 @@ never credentials or private logs. At the end, decide whether to keep it and why
 Removal is deleting the calling workflow through your normal review process.
 
 See [validation](VALIDATION.md), [trigger policy](docs/TRIGGER-POLICY.md) and
-[runner/environment policy](docs/CONTEXT-POLICY.md). Valid aliases remain
-unsupported. No production precision/recall or human security audit is claimed.
+[runner/environment policy](docs/CONTEXT-POLICY.md). Alias handling is described
+in the [YAML policy](docs/YAML-POLICY.md); the installation pin above is the
+validated unreleased alias update. The original `v0.0.0` tag still rejects aliases.
+No production precision/recall or human security audit is claimed.

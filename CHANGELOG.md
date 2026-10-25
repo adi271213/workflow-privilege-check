@@ -1,5 +1,13 @@
 # Changes
 
+## Unreleased
+
+- Analyze bounded YAML anchors/aliases across permissions, secrets, runner and
+  environment selections. Validate the whole composed graph before construction;
+  reject cycles, expanded depth/node/byte limits, and unsupported merge keys.
+- Keep read-only permission increases as review prompts; severity tiering remains
+  a separate proposal.
+
 ## 0.0.0 — initial experimental version
 
 - Report configured token, selected trigger and secret-reference additions.

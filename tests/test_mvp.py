@@ -270,9 +270,10 @@ class Semantics(unittest.TestCase):
     def test_omission_differs_from_explicit_null(self):
         self.assertEqual(self.scan(BASE.replace("permissions: {}", "permissions: null"))["analysis"], "error")
 
-    def test_alias_is_explicitly_rejected(self):
+    def test_aliases_are_supported(self):
+        # Aliases are analyzed (bounded), not rejected outright.
         head = BASE.replace("permissions: {}", "permissions: &p {}\nextra: *p")
-        self.assertEqual(self.scan(head)["analysis"], "error")
+        self.assertEqual(self.scan(head)["analysis"], "complete")
 
     def test_custom_yaml_tags_do_not_execute(self):
         result = self.scan("!!python/object/apply:os.system ['touch SHOULD_NOT_EXIST']")

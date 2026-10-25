@@ -30,7 +30,7 @@ def main():
         git('init', '-q', '-b', 'main'); git('config', 'user.name', 'Offline fixture')
         git('config', 'user.email', 'fixture@example.invalid'); git('config', 'commit.gpgsign', 'false')
         file = repo / '.github/workflows/ci.yml'; file.parent.mkdir(parents=True)
-        base_text = 'on: workflow_dispatch\npermissions: {}\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps: [{run: echo fixture}]\n'
+        base_text = 'on: workflow_dispatch\npermissions: {}\njobs:\n  test: &job\n    runs-on: ubuntu-latest\n    steps: [{run: echo fixture}]\n  replica: *job\n'
         file.write_text(base_text); git('add', '.'); git('commit', '-qm', 'base'); base = git('rev-parse', 'HEAD')
         file.write_text(base_text.replace('permissions: {}', 'permissions: {id-token: write}').replace('runs-on: ubuntu-latest', 'runs-on: [self-hosted, prod]\n    environment: production'))
         git('commit', '-qam', 'head'); head = git('rev-parse', 'HEAD')
@@ -53,6 +53,7 @@ def main():
             report = json.loads(Path(outputs['report-path']).read_text())
             assert outputs['analysis-status'] == 'complete' and outputs['review-status'] == 'suggested'
             assert {f['rule'] for f in report['findings']} == {'WF001', 'WF005', 'WF007'}
+            assert len(report['findings']) == 6  # Both aliased jobs retain each grant.
             assert (outputs['base-sha'], outputs['head-sha']) == (base, head)
             assert 'not approval to merge' in Path(env['GITHUB_STEP_SUMMARY']).read_text()
             print('WPC_OFFLINE_RESULT=' + json.dumps({'mode': mode, 'analysis': 'complete', 'review': 'suggested',
