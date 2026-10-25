@@ -38,9 +38,9 @@ class OfflineRuntime(unittest.TestCase):
         cp = subprocess.run([sys.executable, '-I', '-S', '-c', code, str(ROOT / 'vendor/pyyaml')], capture_output=True, text=True, check=True)
         self.assertIn(str(ROOT / 'vendor/pyyaml'), cp.stdout)
 
-    def test_release_versions_match_zero(self):
+    def test_release_versions_match_release(self):
         project = tomllib.loads((ROOT / 'pyproject.toml').read_text())
         spec = importlib.util.spec_from_file_location('release_version', ROOT / 'src/privilege_check/__init__.py')
         version = importlib.util.module_from_spec(spec); spec.loader.exec_module(version)
         self.assertEqual(project['project']['version'], version.__version__)
-        self.assertEqual(version.__version__, '0.0.0')
+        self.assertEqual(version.__version__, '0.0.1')

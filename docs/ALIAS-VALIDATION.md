@@ -1,7 +1,8 @@
-# Bounded-alias validation
+# Bounded-alias validation before 0.0.1
 
 Evaluated Action runtime: `3366fd4e201a1b672408fe93fd7cde2d06912362`.
-The `v0.0.0` tag is unchanged; alias support is an unreleased update.
+At this validation, alias support was unreleased. It is included in 0.0.1;
+the `v0.0.0` tag is unchanged. See [release checks](RELEASE-0.0.1.md).
 
 - [Candidate CI](https://github.com/adi271213/workflow-privilege-check/actions/runs/40219337123)
   passed 127 tests on each of Python 3.11–3.14. Both Action modes also ran as an
