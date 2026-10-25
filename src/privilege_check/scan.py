@@ -1,10 +1,12 @@
-"""Three deliberately limited rules over configured capabilities, per job."""
+"""Deliberately limited rules over configured capabilities and contexts, per job."""
 import copy
 import re
 from typing import Any
 import yaml
 
 from .sources import MAX_FILE, Snapshot
+from .contexts import compare_contexts
+from .yaml_limits import MAX_ALIASES, validate_graph
 
 LEVELS = {"none": 0, "read": 1, "write": 2}
 SCOPES = {
@@ -28,6 +30,8 @@ LIMITATIONS = [
     "Does not inspect executed scripts, remote actions/workflows, cloud trust, or environment guards.",
     "Trigger filter changes and secret delivery to individual steps are outside coverage.",
     "Trigger review covers selected event names only: " + ", ".join(sorted(REVIEW_TRIGGERS)) + ".",
+    "Runner ownership/inventory and environment secret/protection settings are not observed. Standard runner labels follow a documented convention list.",
+    "Only direct static matrix fields resolve runner/environment expressions; unchanged unresolved selections compare symbolically under fixed external context.",
 ]
 
 
@@ -71,7 +75,7 @@ def parse(text: str) -> dict:
         count += 1
         if isinstance(token, yaml.tokens.AliasToken):
             aliases += 1
-            if aliases > 500:
+            if aliases > MAX_ALIASES:
                 raise ValueError("Too many YAML aliases.")
         if isinstance(token, (yaml.tokens.BlockMappingStartToken, yaml.tokens.BlockSequenceStartToken,
                               yaml.tokens.FlowMappingStartToken, yaml.tokens.FlowSequenceStartToken)):
@@ -81,7 +85,13 @@ def parse(text: str) -> dict:
             depth -= 1
         if depth > 50 or count > 60000:
             raise ValueError("YAML structure exceeds limits.")
-    document = yaml.load(text, Loader=StrictLoader)
+    loader = StrictLoader(text)
+    try:
+        node = loader.get_single_node()
+        validate_graph(node)
+        document = loader.construct_document(node) if node is not None else None
+    finally:
+        loader.dispose()
     if not isinstance(document, dict) or not isinstance(document.get("jobs"), dict) or not document["jobs"]:
         raise ValueError("Workflow needs a nonempty jobs mapping.")
     if "on" not in document:
@@ -274,6 +284,14 @@ def compare(base: Snapshot, head: Snapshot, defaults=None) -> dict:
             diagnostic(path, "comparison", str(exc), error=True)
         for name, new_job in sorted(after["jobs"].items()):
             old_job = before["jobs"].get(name)
+            changes, issues, assumptions = compare_contexts(old_job, new_job)
+            for change in changes:
+                finding(change["rule"], path, name, change["before"], change["after"], change["message"])
+            for kind, reason in issues:
+                diagnostic(path, "comparison", reason, job=name, error=kind == "error")
+            for assumption in assumptions:
+                if assumption not in report["assumptions"]:
+                    report["assumptions"].append(assumption)
             values = {}
             for side, doc, job in (("base", before, old_job), ("head", after, new_job)):
                 try:
