@@ -2,7 +2,10 @@ import html
 
 
 def _text(value):
-    return html.escape(str(value)).replace("|", "&#124;").replace("`", "&#96;").replace("\n", " ").replace("\r", " ")
+    text = html.escape(str(value)).replace("\n", " ").replace("\r", " ")
+    # Keep repository-controlled names literal, including Markdown links/images,
+    # emphasis and backslashes that could alter the surrounding table.
+    return "".join(f"&#{ord(char)};" if char in "\\`*_[]()!|~" else char for char in text)
 
 
 def markdown(report: dict) -> str:

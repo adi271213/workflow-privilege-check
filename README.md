@@ -80,8 +80,14 @@ No policy or suppression files are loaded from the proposed tree.
 | Rule | What is compared | What is not established |
 |---|---|---|
 | WF001 | Per-job token scope increases, including read increases; workflow settings and job overrides | Runtime token privileges, fork restrictions, cloud authorization |
-| WF003 | New `pull_request_target` and `workflow_run` event names | Exploitability or changes to filters on an existing trigger |
+| WF003 | New selected review-sensitive event names; see [trigger policy](docs/TRIGGER-POLICY.md) | Runtime privileges, exploitability, actor checks, or changes to filters on an existing trigger |
 | WF004 | New per-job literal secret references, workflow-level env references, and whole-secret forwarding | Whether secrets exist, are available, or are actually accessed |
+
+The unreleased WF003 extension covers `issue_comment`, `issues`, `discussion`
+and `discussion_comment`, alongside `pull_request_target` and `workflow_run`.
+The evaluated pilot pin above covers only the latter two. The expanded set is a
+review policy: a new event does not automatically grant write access. See the
+[rationale and exclusions](docs/TRIGGER-POLICY.md) before selecting a version.
 
 Job identities are their job IDs. A permission copied to another existing job is
 a new finding. Job renames may conservatively appear as new jobs. Exact-content
@@ -165,6 +171,12 @@ python scripts/validate.py
 This runs the synthetic acceptance matrix plus parser, source-reader, CLI, and local
 Action-entry integration tests. It saves `validation-results.json` with outcomes,
 runtime versions, and source hashes. It requires no cloud credentials or network.
+
+`validation-results.json` records only that local suite. The hosted counts at the
+top of this README refer to separate GitHub runs linked in
+[the evidence index](docs/review/README.md); they are not results produced by the
+local script. The selected 74-PR replay is a third, separate artifact and does not
+measure production precision or recall.
 
 The [CI workflow](.github/workflows/ci.yml) runs this same suite on Python
 3.11–3.14 for pull requests and pushes to `main`. Dependency setup uses the
