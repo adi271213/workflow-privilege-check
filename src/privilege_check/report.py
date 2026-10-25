@@ -12,15 +12,18 @@ def markdown(report: dict) -> str:
     status = report["analysis"]
     if status != "complete":
         title = "Analysis " + status
-    elif report["findings"]:
+    elif report.get("review") == "suggested":
         title = "Review suggested"
+    elif report["findings"]:
+        title = "Informational configuration changes"
     else:
         title = "No supported privilege expansions detected"
     lines = [f"## {title}", "", f"Base: `{_text(report['base'])}`", f"Head: `{_text(report['head'])}`", ""]
     if report["findings"]:
-        lines += ["| Rule | Workflow | Job | Change |", "|---|---|---|---|"]
+        lines += ["| Rule | Severity | Workflow | Job | Change |", "|---|---|---|---|---|"]
         for item in report["findings"]:
-            lines.append("| " + " | ".join(_text(item[key] or "—") for key in ("rule", "file", "job", "message")) + " |")
+            cells = [item["rule"], item.get("severity", "review"), item["file"], item["job"], item["message"]]
+            lines.append("| " + " | ".join(_text(c or "—") for c in cells) + " |")
         lines.append("")
     for item in report["diagnostics"]:
         lines.append(f"- {_text(item['side'])}: {_text(item['file'])}, job {_text(item['job'] or '—')}: {_text(item['reason'])}")

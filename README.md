@@ -77,7 +77,9 @@ otherwise-incomplete comparisons:
 | **WF004** | adds a secret reference, workflow-env reference, or `secrets: inherit` forwarding | whether the secret exists, is available, or is actually used |
 
 A new trigger does not automatically grant write access; findings are review
-prompts, not vulnerability claims.
+prompts, not vulnerability claims. Read-only scope increases are reported as
+`info` and do not trigger a review suggestion; `write`/`id-token`, new triggers,
+and new secrets are `review`.
 
 **Result contract:** `complete` with no findings → exit 0 (no increase detected);
 `complete` with findings → exit 0 (review suggested); `incomplete` or `error` →
