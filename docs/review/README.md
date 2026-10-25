@@ -3,6 +3,9 @@
 This is an experimental configured-change review aid. It does not certify PR
 safety, detect arbitrary malicious workflow code, or enforce a merge boundary.
 
+The [current pilot pin and hosted results](#current-pilot-trigger-extension)
+are recorded below. Earlier sections retain their original revision boundaries.
+
 ## Implementation and label review
 
 The v0.2.1 review reproduced and fixed two issues: Git replacement refs could
@@ -90,5 +93,49 @@ The first reopened consumer runs still used the old pin and are excluded from
 these counts; the PR branches were explicitly updated before this verified replay.
 The fixes merged in [PR #1](https://github.com/adi271213/workflow-privilege-check/pull/1),
 with the separate agent review recorded above. The [pilot setup guide](../../PILOT.md)
-uses the unchanged hosted-tested Action pin. No maintainer invitations or
-merge enforcement changes.
+used the then-current hosted-tested Action pin. The newer trigger-extension pin
+is documented below. No maintainer invitations or merge enforcement changes.
+
+## Current pilot trigger extension
+
+The evaluated Action pin is `b3a6401e90f873e192c9d423ece5a44bc22ed44e`, introduced by
+[PR #3](https://github.com/adi271213/workflow-privilege-check/pull/3). It adds the
+four issue/discussion events in [the trigger policy](../TRIGGER-POLICY.md) and
+renders Markdown syntax in untrusted names literally. Later setup/evidence
+commits retain identical scanner/runtime bytes; package version remains 0.2.1,
+with no new tagged release.
+
+- All 93 tests passed across Python 3.11–3.14 in [PR CI](https://github.com/adi271213/workflow-privilege-check/actions/runs/40199391256).
+- Ten same-repository consumer PR runs passed: [machine-readable results](pr3-consumer-results.json).
+- Eighteen hosted contract jobs passed across advisory/require-complete modes:
+  [run](https://github.com/adi271213/workflow-privilege-check/actions/runs/40200633642) and [verified results](pr3-contract-results.json).
+- The frozen 74-PR replay preserved all 45 exact facts and 62 complete / 12
+  incomplete outcomes: [replay summary](pr3-replay-summary.json). It produced no
+  additional trigger findings and does not measure the new policy's usefulness.
+
+| Consumer case | Expected analysis / review / findings | Hosted run |
+|---|---|---|
+| neutral | complete / none / 0 | [run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40200492528) |
+| issue-comment | complete / suggested / 1 | [run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40200495553) |
+| issues | complete / suggested / 1 | [run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40200498279) |
+| discussion | complete / suggested / 1 | [run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40200502249) |
+| discussion-comment | complete / suggested / 1 | [run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40200507148) |
+| incomplete | incomplete / unknown / 0 | [run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40200509964) |
+| mixed | incomplete / suggested / 1 | [run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40200513720) |
+| alias-error | error / unknown / 0 | [run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40200517973) |
+| syntax-error | error / unknown / 0 | [run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40200521310) |
+| markdown-name | complete / suggested / 1 | [run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40200524136) |
+
+The consumer checked exact event base/head SHAs, read-only token permissions,
+report consistency and uncertainty warnings using the public template. Alias and
+malformed YAML cases passed by reporting error/unknown. The intentionally malformed
+fixture also caused GitHub's own workflow validation failure; that fixture run is
+not the consumer check being counted. No fixture workflow was dispatched or merged.
+The Markdown-name consumer case verified JSON evidence; escaping is covered by
+unit tests, without a new rendered-UI assertion.
+
+These are synthetic same-repository runs. Four genuine fork tests and a separate
+agent's 38-case assessment remain evidence for the older pin only; neither was
+repeated for this extension. No human security review, production precision/recall,
+new independent malicious-PR corpus, or maintainer-usefulness result is claimed.
+No maintainer invitations have been sent.

@@ -10,8 +10,8 @@
 - Add regressions for trigger forms, additions/removals/reordering, retained
   findings with unknown defaults, and malformed trigger declarations.
 - Distinguish local validation output from hosted Action and selected-PR replay
-  evidence. The evaluated v0.2.1 pilot pin remains unchanged and covers only its
-  original two selected trigger names.
+  evidence. The evaluated pilot now pins `b3a6401e90f873e192c9d423ece5a44bc22ed44e`;
+  the earlier v0.2.1 pin covered only its original two selected trigger names.
 - Render Markdown link/image, emphasis and backslash characters in untrusted
   names as literal text; preserve original names in JSON findings.
 

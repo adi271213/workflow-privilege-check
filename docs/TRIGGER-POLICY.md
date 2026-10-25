@@ -13,9 +13,10 @@ does not itself grant a write token, make a secret available, or prove an exploi
 | `discussion` | Discussion activity can invoke a default-branch workflow. Review actor checks and use of discussion data. |
 | `discussion_comment` | Discussion comments can invoke a default-branch workflow. Review actor checks and use of comment data. |
 
-The first two events are covered by the tested v0.2.1 pilot Action pin
-`50bc69f8d1772a67129635e0814097da6f8d8c11`. The four issue/discussion events are
-an unreleased extension; that older pin does not gain the new coverage.
+All six events are covered by the evaluated pilot Action pin
+`b3a6401e90f873e192c9d423ece5a44bc22ed44e`. The earlier pin
+`50bc69f8d1772a67129635e0814097da6f8d8c11` covered only the first two. This is a
+commit-pinned pilot extension, without a new tagged package release.
 
 ## Boundaries
 
@@ -41,6 +42,6 @@ GitHub's [event reference](https://docs.github.com/en/actions/reference/workflow
 documents execution refs, event types, and fork behavior. Token access also
 depends on [permission declarations and repository settings](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions).
 
-This extension is covered by synthetic regressions, not an independent incident
-corpus or a measured maintainer-usefulness claim. Keep the evaluated pilot pin
-fixed until a candidate version is separately selected and validated.
+This extension is covered by local regressions and hosted consumer/contract runs,
+not an independent incident corpus or a measured maintainer-usefulness claim.
+Keep the evaluated full pilot pin fixed during the advisory trial.
