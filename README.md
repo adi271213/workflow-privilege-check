@@ -166,6 +166,12 @@ This runs the synthetic acceptance matrix plus parser, source-reader, CLI, and l
 Action-entry integration tests. It saves `validation-results.json` with outcomes,
 runtime versions, and source hashes. It requires no cloud credentials or network.
 
+The [CI workflow](.github/workflows/ci.yml) runs this same suite on Python
+3.11–3.14 for pull requests and pushes to `main`. Dependency setup uses the
+hash-verified requirements and needs network access. CI has a read-only token and
+does not use repository secrets. The separate manual Action contract workflow
+checks the hosted wrapper against its retained consumer fixtures.
+
 ## Next experiment
 
 The initial public-PR comparison found substantial overlap with existing tools.
