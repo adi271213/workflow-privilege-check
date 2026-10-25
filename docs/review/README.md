@@ -88,6 +88,7 @@ failure-mode behavior. [Machine-readable results](hosted-results.json).
 shows error/unknown without presenting advisory success as a clean analysis.
 The first reopened consumer runs still used the old pin and are excluded from
 these counts; the PR branches were explicitly updated before this verified replay.
-The fixes remain in [draft PR #1](https://github.com/adi271213/workflow-privilege-check/pull/1)
-with the separate agent review recorded above. No maintainer invitations or
+The fixes merged in [PR #1](https://github.com/adi271213/workflow-privilege-check/pull/1),
+with the separate agent review recorded above. The [pilot setup guide](../../PILOT.md)
+uses the unchanged hosted-tested Action pin. No maintainer invitations or
 merge enforcement changes.

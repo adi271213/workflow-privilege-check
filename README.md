@@ -4,7 +4,7 @@ A report-only tool that explains supported GitHub Actions configuration changes
 between two snapshots. Built from scratch; no historical scanner implementation
 is included.
 
-**Status:** experimental alpha, v0.2.1 candidate. The tested functional Action pin
+**Status:** experimental alpha, v0.2.1. The tested functional Action pin
 is `50bc69f8d1772a67129635e0814097da6f8d8c11`: **18 hosted contract jobs and
 10 consumer PR runs passed, including four genuine fork PRs**. Expected
 incomplete/error cases passed by reporting uncertainty; they are not clean
