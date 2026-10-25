@@ -66,7 +66,7 @@ history/labels were available; this was not blinded or human validation.
 
 The reviewer requested one P3 correction: make the README opening identify the
 current pin and 18 + 10 hosted counts instead of mixing historical revisions.
-That documentation correction is applied. The tested functional code is unchanged.
+That documentation correction is applied and the [reviewer confirmed closure](separate-agent/FOLLOWUP.md). The tested functional code is unchanged.
 See [case adjudications](separate-agent/case-review.csv) and
 [verification summary](separate-agent/verification-summary.json).
 
