@@ -1,4 +1,4 @@
-# Install the 0.0.0 advisory pilot
+# Install the advisory pilot
 
 Use one public repository you maintain that already runs GitHub Actions. Keep
 ordinary review and existing scanners. This tool reports configured changes;

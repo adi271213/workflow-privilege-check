@@ -25,3 +25,5 @@ an expression-only counter would leave those paths exposed to alias expansion.
 An unchanged file is skipped, as before. The scanner is a delta review aid and
 does not certify that all pre-existing repository YAML is valid. Invalid changed
 input produces error; findings established in other files remain available.
+
+See [alias validation](ALIAS-VALIDATION.md) for reproducible cases and hosted evidence.

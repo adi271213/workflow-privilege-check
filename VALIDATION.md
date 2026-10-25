@@ -29,3 +29,5 @@ noise, no execution analysis, no cloud authorization or remote environment-polic
 inspection, and bounded expression/matrix support. See the policies linked from
 README. An incomplete/error outcome is not a clean analysis even when advisory
 execution succeeds. Findings alone do not block merges.
+
+The unreleased bounded-alias update has separate [validation evidence](docs/ALIAS-VALIDATION.md).
