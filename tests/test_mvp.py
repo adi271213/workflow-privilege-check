@@ -86,6 +86,55 @@ class Semantics(unittest.TestCase):
         self.assertEqual(result["findings"][0]["job"], "test")
         self.assertEqual(result["findings"][0]["after"], {"packages": "write"})
 
+    def test_selected_trigger_additions_in_all_supported_forms(self):
+        events = ("pull_request_target", "workflow_run", "issue_comment", "issues",
+                  "discussion", "discussion_comment")
+        for event in events:
+            for declaration in (f"on: {event}", f"on: [push, {event}]",
+                                f"on:\n  push:\n  {event}:"):
+                with self.subTest(event=event, declaration=declaration):
+                    head = BASE.replace("on: push", declaration)
+                    for old in ({WF: BASE}, {}):
+                        result = compare(Snapshot("base", old), Snapshot("head", {WF: head}))
+                        self.assertEqual((result["analysis"], result["review"]), ("complete", "suggested"))
+                        self.assertEqual([(f["rule"], f["after"]) for f in result["findings"]], [("WF003", event)])
+
+    def test_existing_or_removed_review_trigger_is_not_a_new_grant(self):
+        for event in ("pull_request_target", "workflow_run", "issue_comment", "issues",
+                      "discussion", "discussion_comment"):
+            base = BASE.replace("on: push", f"on: [push, {event}]")
+            for head in (base.replace("echo fixture", "echo changed"),
+                         base.replace(f"[push, {event}]", f"[{event}, push]"), BASE):
+                with self.subTest(event=event, head=head):
+                    result = self.scan(head, base)
+                    self.assertEqual((result["analysis"], result["findings"]), ("complete", []))
+
+    def test_existing_trigger_filter_edits_remain_outside_coverage(self):
+        base = BASE.replace("on: push", "on:\n  issue_comment:\n    types: [created]")
+        result = self.scan(base.replace("[created]", "[created, edited]"), base)
+        self.assertEqual((result["analysis"], result["findings"]), ("complete", []))
+        self.assertIn("Trigger filter changes", " ".join(result["limitations"]))
+
+    def test_review_trigger_finding_survives_unknown_token_defaults(self):
+        base = BASE
+        head = BASE.replace("on: push", "on: [push, issue_comment]").replace("permissions: {}\n", "")
+        result = self.scan(head, base)
+        self.assertEqual((result["analysis"], result["review"]), ("incomplete", "suggested"))
+        self.assertEqual([(f["rule"], f["after"]) for f in result["findings"]], [("WF003", "issue_comment")])
+
+    def test_pr_merge_context_events_are_not_default_branch_trigger_findings(self):
+        for event in ("pull_request", "pull_request_review", "pull_request_review_comment"):
+            with self.subTest(event=event):
+                result = self.scan(BASE.replace("on: push", f"on: [push, {event}]"))
+                self.assertEqual((result["analysis"], result["findings"]), ("complete", []))
+                self.assertIn("selected event names only", " ".join(result["limitations"]))
+
+    def test_null_trigger_remains_error_without_hiding_known_scope_change(self):
+        head = BASE.replace("on: push", "on: ~").replace("permissions: {}", "permissions: {contents: write}")
+        result = self.scan(head)
+        self.assertEqual((result["analysis"], result["review"]), ("error", "suggested"))
+        self.assertEqual([f["rule"] for f in result["findings"]], ["WF001"])
+
     def test_per_job_evidence(self):
         head = BASE.replace("permissions: {}", "permissions: {packages: write}")
         result = self.scan(head)
@@ -249,6 +298,27 @@ class Semantics(unittest.TestCase):
         self.assertNotIn("<img", text)
         self.assertIn("&#124;", text)
         self.assertIn("&#96;", text)
+
+    def test_markdown_names_cannot_insert_links_or_images(self):
+        name = "test![pixel](https://example.invalid/pixel.png)_[open](https://example.invalid/)_"
+        head = BASE.replace("test:", f"'{name}':").replace("permissions: {}", "permissions: {packages: write}")
+        result = self.scan(head)
+        self.assertEqual(result["analysis"], "complete")
+        self.assertEqual(result["findings"][0]["job"], name)
+        text = markdown(result)
+        self.assertNotIn("![pixel]", text)
+        self.assertNotIn("](", text)
+        self.assertIn("&#33;&#91;pixel&#93;&#40;", text)
+        self.assertIn("&#95;&#91;open&#93;", text)
+
+    def test_markdown_diagnostic_filename_stays_literal(self):
+        path = ".github/workflows/[open](evil)_name_\\|.yml"
+        result = compare(Snapshot("base", {}), Snapshot("head", {path: "jobs: [unclosed"}))
+        self.assertEqual(result["analysis"], "error")
+        text = markdown(result)
+        self.assertNotIn("](", text)
+        self.assertIn("&#92;&#124;", text)
+        self.assertIn("&#91;open&#93;", text)
 
     def test_boundary_message_does_not_offer_auto_merge(self):
         text = markdown(self.scan(BASE.replace("echo fixture", "echo changed")))

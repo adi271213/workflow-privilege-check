@@ -16,12 +16,18 @@ SCOPES = {
 }
 SCOPES.update({"id-token": {"none", "write"}, "copilot-requests": {"none", "write"},
                "vulnerability-alerts": {"none", "read"}})
-PRIVILEGED = {"pull_request_target", "workflow_run"}
+# Selected default/base-branch execution boundaries, not a claim that each
+# event grants a write token. See docs/TRIGGER-POLICY.md for rationale and limits.
+REVIEW_TRIGGERS = {
+    "pull_request_target", "workflow_run", "issue_comment", "issues",
+    "discussion", "discussion_comment",
+}
 TOKEN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 LIMITATIONS = [
     "Compares supported configured capabilities, not actual runtime access or PR safety.",
     "Does not inspect executed scripts, remote actions/workflows, cloud trust, or environment guards.",
     "Trigger filter changes and secret delivery to individual steps are outside coverage.",
+    "Trigger review covers selected event names only: " + ", ".join(sorted(REVIEW_TRIGGERS)) + ".",
 ]
 
 
@@ -251,9 +257,9 @@ def compare(base: Snapshot, head: Snapshot, defaults=None) -> dict:
         try:
             old_triggers = _triggers(before) if base.files.get(path) is not None else set()
             new_triggers = _triggers(after)
-            for trigger in sorted((new_triggers - old_triggers) & PRIVILEGED):
+            for trigger in sorted((new_triggers - old_triggers) & REVIEW_TRIGGERS):
                 finding("WF003", path, None, None, trigger,
-                        f"Privileged trigger {trigger} introduced. Review untrusted-input handling.")
+                        f"Review-sensitive trigger {trigger} introduced. Review who can invoke it and token/secret access.")
         except ValueError as exc:
             diagnostic(path, "comparison", str(exc), error=True)
         for name, new_job in sorted(after["jobs"].items()):

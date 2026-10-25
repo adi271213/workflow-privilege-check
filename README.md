@@ -4,17 +4,19 @@ A report-only tool that explains supported GitHub Actions configuration changes
 between two snapshots. Built from scratch; no historical scanner implementation
 is included.
 
-**Status:** experimental alpha, v0.2.1. The tested functional Action pin
-is `50bc69f8d1772a67129635e0814097da6f8d8c11`: **18 hosted contract jobs and
-10 consumer PR runs passed, including four genuine fork PRs**. Expected
-incomplete/error cases passed by reporting uncertainty; they are not clean
-analyses. See [evidence and limitations](docs/review/README.md) for exact revisions,
-run links, historical results, and the 74-PR benchmark.
+**Status:** experimental alpha. The current evaluated pilot Action pin is
+`b3a6401e90f873e192c9d423ece5a44bc22ed44e`: **10 same-repository consumer PR runs and
+18 hosted mode-contract jobs passed**. The local/integration suite also passed
+all 93 tests across Python 3.11–3.14 in CI. Expected incomplete/error cases passed
+by reporting uncertainty; they are not clean analyses.
 
-A [separate reviewer agent](docs/review/separate-agent/REPORT.md) found no blocking
-issue and agreed with the 45 configured facts in the 38-case review packet.
-This is not human validation or a production precision estimate. Do not require
-this check for merging or use its result to authorize auto-merge during evaluation.
+This is a commit-pinned extension of package version 0.2.1, without a new tagged
+release. Earlier genuine fork tests and a separate reviewer-agent assessment used
+an older revision; they are retained as historical evidence, not new validation
+of this pin. See [evidence and limitations](docs/review/README.md) for exact runs,
+version boundaries, the 38-case review packet and selected 74-PR replay. This is
+not human validation or a production precision estimate. Keep the check outside
+required merge checks and auto-merge authorization during evaluation.
 
 ## Advisory pilot
 
@@ -80,8 +82,13 @@ No policy or suppression files are loaded from the proposed tree.
 | Rule | What is compared | What is not established |
 |---|---|---|
 | WF001 | Per-job token scope increases, including read increases; workflow settings and job overrides | Runtime token privileges, fork restrictions, cloud authorization |
-| WF003 | New `pull_request_target` and `workflow_run` event names | Exploitability or changes to filters on an existing trigger |
+| WF003 | New selected review-sensitive event names; see [trigger policy](docs/TRIGGER-POLICY.md) | Runtime privileges, exploitability, actor checks, or changes to filters on an existing trigger |
 | WF004 | New per-job literal secret references, workflow-level env references, and whole-secret forwarding | Whether secrets exist, are available, or are actually accessed |
+
+The evaluated pilot pin covers `issue_comment`, `issues`, `discussion` and
+`discussion_comment`, alongside `pull_request_target` and `workflow_run`.
+The selected set is a review policy: a new event does not automatically grant
+write access. See the [rationale and exclusions](docs/TRIGGER-POLICY.md).
 
 Job identities are their job IDs. A permission copied to another existing job is
 a new finding. Job renames may conservatively appear as new jobs. Exact-content
@@ -144,12 +151,13 @@ uses an isolated Python environment, reads PR base/head SHAs, and writes a job
 summary. Both Git objects must already exist locally. It does not post comments
 or request write permissions.
 
-The tested v0.2.1 pin passed the hosted tests documented above, covering
-neutral edits, known grants, incomplete defaults and analysis errors. Dependency
-bootstrap, contributor approval, read-only token context, event SHA delivery,
-summary content and signed-in rendering, and exit handling passed. The tests use
-Linux GitHub-hosted runners and synthetic fixtures; they do not establish universal
-integration safety.
+The current pin passed ten synthetic consumer PR runs and 18 hosted mode-contract
+jobs, covering neutral edits, the new triggers, known grants, missing objects,
+incomplete defaults, analysis errors and provenance regressions. These runs
+verified dependency bootstrap, exact event SHAs, explicit outputs and read-only
+token context on Linux GitHub-hosted runners. Earlier genuine fork approvals and
+signed-in rendering checks belong to the previous pin; no new fork or rendered-UI
+validation is claimed for the current pin.
 
 See `examples/github-action-template.yml`. Select the evaluated full commit SHA
 for the version being tested. Do not use `uses: ./` from an untrusted PR
@@ -165,6 +173,12 @@ python scripts/validate.py
 This runs the synthetic acceptance matrix plus parser, source-reader, CLI, and local
 Action-entry integration tests. It saves `validation-results.json` with outcomes,
 runtime versions, and source hashes. It requires no cloud credentials or network.
+
+`validation-results.json` records only that local suite. The hosted counts at the
+top of this README refer to separate GitHub runs linked in
+[the evidence index](docs/review/README.md); they are not results produced by the
+local script. The selected 74-PR replay is a third, separate artifact and does not
+measure production precision or recall.
 
 The [CI workflow](.github/workflows/ci.yml) runs this same suite on Python
 3.11–3.14 for pull requests and pushes to `main`. Dependency setup uses the

@@ -1,20 +1,21 @@
 # Install the three-maintainer advisory pilot
 
 This is an experimental review aid for public GitHub repositories. It compares
-configured token scopes, newly added `pull_request_target` / `workflow_run` event
-names, and secret references between two snapshots. It does not establish runtime
+configured token scopes, newly added selected trigger names, and secret references
+between two snapshots. WF003 covers `pull_request_target`, `workflow_run`,
+`issue_comment`, `issues`, `discussion` and `discussion_comment`. It does not establish runtime
 credential access or PR safety. Keep your existing review process and scanners.
 
-The reviewed fixes merged in [PR #1](https://github.com/adi271213/workflow-privilege-check/pull/1).
+The trigger extension and summary escaping are in [PR #3](https://github.com/adi271213/workflow-privilege-check/pull/3).
 Use the already-tested Action pin below throughout the pilot:
 
 ```text
-adi271213/workflow-privilege-check@50bc69f8d1772a67129635e0814097da6f8d8c11
+adi271213/workflow-privilege-check@b3a6401e90f873e192c9d423ece5a44bc22ed44e
 ```
 
-This is a full commit pin, not a moving branch or release tag. It is part of the
-merged history. The later merge/documentation commits do not change the tested
-functional code.
+This is a full commit pin, not a moving branch or release tag. Later installation
+and evidence commits retain the same tested scanner/runtime. The package version
+remains 0.2.1; this pilot extension has no new tagged release.
 
 ## 1. Choose one public repository
 
@@ -37,13 +38,13 @@ Copy the provided `workflow-privilege-review.yml` to:
 ```
 
 The exact hosted-tested template is also available in the
-[merged source](https://github.com/adi271213/workflow-privilege-check/blob/dba670946280694448ebb3f9582c76a9325e2094/examples/github-action-template.yml).
+[merged source](https://github.com/adi271213/workflow-privilege-check/blob/81818571ace814a09c4a8c85bff6dfbcdee0f734/examples/github-action-template.yml).
 From your repository root, this downloads that fixed template:
 
 ```sh
 mkdir -p .github/workflows
 curl --fail --silent --show-error --location \
-  https://raw.githubusercontent.com/adi271213/workflow-privilege-check/dba670946280694448ebb3f9582c76a9325e2094/examples/github-action-template.yml \
+  https://raw.githubusercontent.com/adi271213/workflow-privilege-check/81818571ace814a09c4a8c85bff6dfbcdee0f734/examples/github-action-template.yml \
   --output .github/workflows/workflow-privilege-review.yml
 ```
 
@@ -104,8 +105,10 @@ read access for its checker job, so a finding on the installation PR can be expe
 In advisory mode, incomplete/error analysis can coexist with a successful Action
 step. The explicit outputs and summary are what matter. Examples of correct
 uncertainty reporting are available in the
-[fork incomplete run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40124634136)
-and [fork error run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40124655019).
+[incomplete run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40200509964)
+and [alias error run](https://github.com/adi271213/workflow-privilege-check-pilot-20261024/actions/runs/40200517973) at the current pin.
+Earlier genuine fork examples used the prior pin; this update does not claim a new
+fork installation test.
 
 Secret references do not prove a secret exists or that plaintext is delivered.
 An OIDC migration or a new read scope can be a legitimate improvement. Dynamic
@@ -128,10 +131,14 @@ There is no hosted account, cloud resource or credential to revoke for this tool
 
 ## Evidence and limits
 
-The tested pin passed 85 local tests, 18 hosted contract jobs and 10 consumer PR
-runs, including four genuine forks. A separate reviewer agent re-adjudicated the
-38-case packet and agreed with 45 configured facts. These are engineering checks
-on selected examples, not production precision/recall or human security validation.
+The current pin passed 93 tests across Python 3.11–3.14 in CI, 18 hosted
+mode-contract jobs and ten same-repository consumer PR runs. The latter cover all
+four new trigger names, neutral edits, incomplete defaults, retained findings with
+incomplete analysis, alias/YAML errors and a Markdown-containing filename.
+Earlier genuine fork tests and the separate agent's 38-case review belong to the
+previous revision. The frozen 74-PR replay still matches all 45 exact expected
+facts, with 62 complete / 12 incomplete outcomes. These are engineering checks on
+selected examples, not production precision/recall or human security validation.
 See the [evidence index](https://github.com/adi271213/workflow-privilege-check/blob/main/docs/review/README.md).
 
 ## Output reference
