@@ -43,4 +43,4 @@ class OfflineRuntime(unittest.TestCase):
         spec = importlib.util.spec_from_file_location('release_version', ROOT / 'src/privilege_check/__init__.py')
         version = importlib.util.module_from_spec(spec); spec.loader.exec_module(version)
         self.assertEqual(project['project']['version'], version.__version__)
-        self.assertEqual(version.__version__, '0.0.1')
+        self.assertEqual(version.__version__, '0.0.2')

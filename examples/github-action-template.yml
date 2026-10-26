@@ -33,7 +33,7 @@ jobs:
           test "$(git rev-parse refs/remotes/origin/privilege-head)" = "$EXPECTED_HEAD"
       - name: Report configured changes (advisory)
         id: privilege
-        uses: adi271213/workflow-privilege-check@ed5248238b1f88d06cb76e9bfa6427e09567f743 # v0.0.1
+        uses: adi271213/workflow-privilege-check@edd446b3273f53c5b3fa7cda9d45bc62cfbc8d9f # v0.0.2
         with:
           mode: advisory
       - name: Explain the result
