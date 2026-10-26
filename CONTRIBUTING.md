@@ -30,6 +30,6 @@ CI runs the suite on Python 3.11–3.14 for every pull request.
 
 See [SECURITY.md](SECURITY.md). Please do not open public issues for vulnerabilities.
 
-See VALIDATION.md for offline Action tests and benchmarks/README.md for the
+See [validation](VALIDATION.md) for offline Action tests and the [benchmark guide](benchmarks/README.md) for the
 hash-pinned historical replay. Runtime dependency updates must preserve vendor
 provenance, license and disconnected-network validation.

@@ -5,8 +5,9 @@ from itertools import product
 # A deliberately explicit convention list, not discovery of runner ownership.
 # Unknown/custom labels and groups merit review instead of being called self-hosted.
 HOSTED_LABELS = set("""ubuntu-latest ubuntu-slim ubuntu-22.04 ubuntu-24.04 ubuntu-26.04
-ubuntu-24.04-arm ubuntu-26.04-arm windows-latest windows-2022 windows-2025
-windows-2025-vs2026 windows-11-arm macos-latest macos-13 macos-14 macos-15 macos-26
+ubuntu-22.04-arm ubuntu-24.04-arm ubuntu-26.04-arm windows-latest windows-2022 windows-2025
+windows-2025-vs2026 windows-11-arm windows-11-vs2026-arm macos-latest macos-13
+macos-14 macos-15 macos-26 xcode-27
 macos-15-intel macos-26-intel macos-14-large macos-14-xlarge macos-15-large
 macos-15-xlarge macos-26-large macos-26-xlarge""".split())
 MATRIX = re.compile(r"\s*\$\{\{\s*matrix\.([A-Za-z_][A-Za-z0-9_]*)\s*\}\}\s*")
@@ -106,6 +107,33 @@ def _environment(job):
     return {"names": sorted({x.casefold() for x in names})}, unknown
 
 
+def _runner_targets(job):
+    """Keep label/group conjunctions from each resolved matrix row together."""
+    if not job or "runs-on" not in job:
+        return []
+    value = job["runs-on"]
+    group = value.get("group") if isinstance(value, dict) else None
+    labels = value.get("labels", []) if isinstance(value, dict) else value
+    if isinstance(labels, str):
+        labels = [labels]
+    selectors = labels + ([group] if group is not None else [])
+    rows = _matrix_rows(_matrix(job)) if any(MATRIX.fullmatch(x) for x in selectors) else [{}]
+    # Called only after _runner established that all selections resolve.
+    if not rows:
+        raise ValueError("Runner target combinations cannot be resolved.")
+
+    def selected(text, row):
+        match = MATRIX.fullmatch(text)
+        return row[match.group(1)] if match else text
+
+    targets = set()
+    for row in rows:
+        label_set = tuple(sorted({selected(label, row).casefold() for label in labels}))
+        groups = (selected(group, row),) if group is not None else ()
+        targets.add((label_set, groups))
+    return [{"labels": list(labels), "groups": list(groups)} for labels, groups in sorted(targets)]
+
+
 def compare_contexts(before, after):
     findings, diagnostics, assumptions = [], [], []
     for field, rule, resolve in (("runs-on", "WF005", _runner), ("environment", "WF007", _environment)):
@@ -131,7 +159,20 @@ def compare_contexts(before, after):
             old = {**old, "unresolved": old_unknown}
             new = {**new, "unresolved": new_unknown}
         elif old == new:
-            continue
+            if field != "runs-on":
+                continue
+            if old_selector == new_selector and _matrix(before) == _matrix(after):
+                continue
+            try:
+                old_targets, new_targets = _runner_targets(before), _runner_targets(after)
+            except ValueError as exc:
+                diagnostics.append(("error", str(exc)))
+                continue
+            if old_targets == new_targets:
+                continue
+            # Equal unions can hide changed label/group combinations. Include
+            # row targets so the finding explains the actual configured change.
+            old, new = {**old, "targets": old_targets}, {**new, "targets": new_targets}
         if field == "runs-on":
             if not (old_unknown or new_unknown) and not (new["groups"] or set(new["labels"]) - HOSTED_LABELS):
                 continue

@@ -6,6 +6,9 @@ An experimental, free, MIT-licensed review aid for GitHub
 Actions configuration changes between a PR's exact base and head commits.
 Version **0.0.1** includes bounded YAML anchor/alias support.
 
+Version 0.0.1 has a [known runner-matrix comparison issue](docs/KNOWN-LIMITATIONS.md).
+Review rearranged runner label/group combinations manually when using that release.
+
 It reports selected token, trigger, secret-reference, runner and environment
 changes for a human to inspect. Intended changes are reported too.
 
@@ -49,6 +52,7 @@ The CLI JSON's `review` field is `none` or `suggested`; the Action additionally
 exports `unknown` for unresolved analysis without findings. Missing reports,
 publication failures and invalid modes fail the Action. A successful step or
 zero findings is not evidence that a PR is safe.
+JSON `schemaVersion` identifies the report format independently of the package version.
 
 ## Coverage
 

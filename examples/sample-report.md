@@ -5,10 +5,10 @@ Head: `directory:sha256:c6f3b69a45ca538e6bd23a33274aafa8d39d1848c251e566c6ac49cf
 
 | Rule | Workflow | Job | Change |
 |---|---|---|---|
-| WF003 | .github/workflows/release.yml | — | Privileged trigger pull_request_target introduced. Review untrusted-input handling. |
+| WF003 | .github/workflows/release.yml | — | Review-sensitive trigger pull&#95;request&#95;target introduced. Review who can invoke it and token/secret access. |
 | WF001 | .github/workflows/release.yml | publish | Job publish is newly configured to request an OIDC identity token. Runtime access is not verified. |
 | WF001 | .github/workflows/release.yml | publish | Job publish is newly configured to use packages: write. Runtime access is not verified. |
-| WF004 | .github/workflows/release.yml | publish | Job publish adds a reference or forwarding path to PUBLISH_TOKEN. Availability and actual access are not verified. |
+| WF004 | .github/workflows/release.yml | publish | Job publish adds a reference or forwarding path to PUBLISH&#95;TOKEN. Availability and actual access are not verified. |
 
 
 Scope: configured capability changes only. This report does not establish PR safety.

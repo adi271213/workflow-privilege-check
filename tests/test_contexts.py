@@ -71,6 +71,44 @@ class Contexts(unittest.TestCase):
                  workflow('${{ matrix.os }}', matrix={'os': ['ubuntu-24.04', 'windows-latest']}))
         self.assertEqual((r['analysis'], r['findings']), ('complete', []))
 
+    def test_matrix_label_combinations_are_not_reduced_to_their_union(self):
+        runner = ['self-hosted', '${{ matrix.pool }}', '${{ matrix.arch }}']
+        before = {'include': [{'pool': 'prod', 'arch': 'x64'}, {'pool': 'test', 'arch': 'arm64'}]}
+        after = {'include': [{'pool': 'prod', 'arch': 'arm64'}, {'pool': 'test', 'arch': 'x64'}]}
+        r = scan(workflow(runner, matrix=before), workflow(runner, matrix=after))
+        self.assertEqual((r['analysis'], r['review']), ('complete', 'suggested'))
+        self.assertEqual([f['rule'] for f in r['findings']], ['WF005'])
+        f = r['findings'][0]
+        self.assertEqual(f['before']['labels'], f['after']['labels'])
+        self.assertNotEqual(f['before']['targets'], f['after']['targets'])
+
+    def test_matrix_group_and_label_correlation_is_preserved(self):
+        runner = {'group': '${{ matrix.pool }}', 'labels': '${{ matrix.arch }}'}
+        before = {'include': [{'pool': 'prod', 'arch': 'x64'}, {'pool': 'test', 'arch': 'arm64'}]}
+        after = {'include': [{'pool': 'prod', 'arch': 'arm64'}, {'pool': 'test', 'arch': 'x64'}]}
+        r = scan(workflow(runner, matrix=before), workflow(runner, matrix=after))
+        self.assertEqual([f['rule'] for f in r['findings']], ['WF005'])
+
+    def test_equivalent_matrix_targets_ignore_row_order_and_unrelated_axes(self):
+        runner = ['self-hosted', '${{ matrix.pool }}', '${{ matrix.arch }}']
+        rows = [{'pool': 'prod', 'arch': 'x64'}, {'pool': 'test', 'arch': 'arm64'}]
+        before = {'include': rows}
+        after = {'include': [{**row, 'python': '3.14'} for row in reversed(rows)]}
+        r = scan(workflow(runner, matrix=before), workflow(runner, matrix=after))
+        self.assertEqual((r['analysis'], r['findings']), ('complete', []))
+
+    def test_literal_conjunction_differs_from_matrix_alternatives(self):
+        before = workflow(['self-hosted', 'prod'])
+        after = workflow('${{ matrix.runner }}', matrix={'runner': ['self-hosted', 'prod']})
+        r = scan(before, after)
+        self.assertEqual([f['rule'] for f in r['findings']], ['WF005'])
+
+    def test_current_standard_runner_labels_stay_quiet(self):
+        for runner in ('ubuntu-22.04-arm', 'windows-11-vs2026-arm', 'xcode-27'):
+            with self.subTest(runner=runner):
+                r = scan(workflow(), workflow(runner))
+                self.assertEqual((r['analysis'], r['findings']), ('complete', []))
+
     def test_include_only_matrix_and_exclusions(self):
         before = workflow('${{ matrix.os }}', matrix={'include': [{'os': 'ubuntu-latest'}]})
         after = workflow('${{ matrix.os }}', matrix={'include': [{'os': 'self-hosted'}]})

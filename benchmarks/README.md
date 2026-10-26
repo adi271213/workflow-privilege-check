@@ -34,4 +34,4 @@ At the 0.0.0 candidate, the replay preserves all 45 legacy facts and the same
 62 complete / 12 incomplete outcomes. It adds one WF007 environment-context
 finding. This is a regression observation, not precision/recall, superiority over
 other tools, or a usefulness result. It does not substitute for the synthetic
-context regressions and hosted Action checks described in ../VALIDATION.md.
+context regressions and hosted Action checks described in [validation](../VALIDATION.md).
