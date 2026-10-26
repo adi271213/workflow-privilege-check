@@ -12,7 +12,7 @@ Copy [the complete workflow](examples/github-action-template.yml) to
 step is already pinned to this evaluated source:
 
 ```text
-adi271213/workflow-privilege-check@ed5248238b1f88d06cb76e9bfa6427e09567f743
+adi271213/workflow-privilege-check@bd50c23ab5e722413a3901eccc0aac5d2e13e02e
 ```
 
 Keep `mode: advisory`, `contents: read`, the trusted-base checkout, exact head
@@ -79,7 +79,7 @@ no PR comments, telemetry or external reporting service are used.
 
 See [validation](VALIDATION.md), [trigger policy](docs/TRIGGER-POLICY.md),
 [runner/environment policy](docs/CONTEXT-POLICY.md) and [YAML policy](docs/YAML-POLICY.md).
-The installation pin above contains the 0.0.1 runtime, including bounded aliases.
+The installation pin above contains the 0.0.2 runtime, including the runner-matrix correction and bounded aliases.
 The original `v0.0.0` tag remains unchanged and rejects aliases.
 For the optional advisory trial, see [PILOT.md](PILOT.md). No production
 precision/recall or independent human security audit is claimed.

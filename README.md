@@ -4,10 +4,11 @@
 
 An experimental, free, MIT-licensed review aid for GitHub
 Actions configuration changes between a PR's exact base and head commits.
-Version **0.0.1** includes bounded YAML anchor/alias support.
+Version **0.0.2** preserves runner label/group combinations across matrix rows
+and includes bounded YAML anchor/alias support.
 
-Version 0.0.1 has a [known runner-matrix comparison issue](docs/KNOWN-LIMITATIONS.md).
-Review rearranged runner label/group combinations manually when using that release.
+The [runner-matrix comparison issue in 0.0.1](docs/KNOWN-LIMITATIONS.md) is fixed
+in 0.0.2. Earlier release tags remain unchanged.
 
 It reports selected token, trigger, secret-reference, runner and environment
 changes for a human to inspect. Intended changes are reported too.
@@ -24,7 +25,7 @@ out the trusted base and fetches the head as Git data. The Action is pinned to
 the evaluated full commit, not loaded from the proposed checkout.
 
 ```yaml
-- uses: adi271213/workflow-privilege-check@ed5248238b1f88d06cb76e9bfa6427e09567f743 # v0.0.1
+- uses: adi271213/workflow-privilege-check@bd50c23ab5e722413a3901eccc0aac5d2e13e02e # v0.0.2
   with:
     mode: advisory
 ```
@@ -98,7 +99,7 @@ the tool does not guess repository defaults. Unchanged inherited values for
 matched job IDs compare symbolically under a disclosed fixed-default assumption.
 
 CI covers Python 3.11–3.14 and exercises the Action in a disconnected network
-namespace. [Release checks](docs/RELEASE-0.0.1.md) and [validation method](VALIDATION.md) separate synthetic tests, hosted
+namespace. [Release checks](docs/RELEASE-0.0.2.md) and [validation method](VALIDATION.md) separate synthetic tests, hosted
 installation checks and the [74-PR historical regression replay](benchmarks/README.md).
 The replay is selected and self-labeled; it is not production precision/recall.
 Maintainer usefulness and independent human security validation remain unproven.

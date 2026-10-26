@@ -19,8 +19,8 @@ Three different checks answer different questions:
 
 A hosted consumer test additionally exercises the public pinned composite Action,
 trusted-base checkout, exact head fetch and result interpretation. The published
-0.0.1 setup is selected only after candidate consumer tests, both mode contracts
-and CI pass. Current run links are retained in [release verification notes](docs/RELEASE-0.0.1.md).
+0.0.2 setup is selected only after candidate consumer tests, both mode contracts
+and CI pass. Current run links are retained in [release verification notes](docs/RELEASE-0.0.2.md).
 Earlier fork runs belong to earlier revisions and are not claimed as new-version
 fork validation. No human security audit or maintainer usefulness result is claimed.
 
