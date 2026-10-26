@@ -12,7 +12,7 @@ Copy [the complete workflow](examples/github-action-template.yml) to
 step is already pinned to this evaluated source:
 
 ```text
-adi271213/workflow-privilege-check@bd50c23ab5e722413a3901eccc0aac5d2e13e02e
+adi271213/workflow-privilege-check@edd446b3273f53c5b3fa7cda9d45bc62cfbc8d9f
 ```
 
 Keep `mode: advisory`, `contents: read`, the trusted-base checkout, exact head

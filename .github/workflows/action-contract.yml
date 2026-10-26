@@ -57,7 +57,7 @@ jobs:
     - name: Run pinned Action mode
       id: result
       continue-on-error: true
-      uses: adi271213/workflow-privilege-check@bd50c23ab5e722413a3901eccc0aac5d2e13e02e
+      uses: adi271213/workflow-privilege-check@edd446b3273f53c5b3fa7cda9d45bc62cfbc8d9f
       with:
         mode: ${{ matrix.mode }}
         base: ${{ steps.refs.outputs.base }}

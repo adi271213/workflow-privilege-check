@@ -25,7 +25,7 @@ out the trusted base and fetches the head as Git data. The Action is pinned to
 the evaluated full commit, not loaded from the proposed checkout.
 
 ```yaml
-- uses: adi271213/workflow-privilege-check@bd50c23ab5e722413a3901eccc0aac5d2e13e02e # v0.0.2
+- uses: adi271213/workflow-privilege-check@edd446b3273f53c5b3fa7cda9d45bc62cfbc8d9f # v0.0.2
   with:
     mode: advisory
 ```
