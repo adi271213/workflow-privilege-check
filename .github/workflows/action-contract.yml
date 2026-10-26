@@ -35,27 +35,25 @@ jobs:
       id: refs
       env:
         CASE: ${{ matrix.case }}
-      run: "python3 -I - <<'PYCODE'\nimport os, subprocess\nfrom pathlib import Path\ncase = os.environ['CASE']\n\
-        heads = {'grants':'8c9cb54049173221ec1144643d2fc6f444b81b15',\n         'incomplete':'95197686ac86c09e3c5aa5b6a4648c944b3cefbe',\n\
-        \         'alias-supported':'50ae76820802d731b68a5101ed9239e6c3dbceac', 'missing':'0'*40}\nbase = '17c331b0529a2f39c6d1db918c8ac876667090c0'\n\
-        repo = Path(os.environ['GITHUB_WORKSPACE'])\nif case in heads:\n    head = heads[case]\nelse:\n    repo\
-        \ = Path(os.environ['RUNNER_TEMP']) / 'review-fixture'\n    repo.mkdir()\n    def git(*args):\n        return\
-        \ subprocess.check_output(['git','-C',str(repo),*args], text=True).strip()\n    git('init','-q','-b','main')\n\
-        \    git('config','user.name','Review fixture')\n    git('config','user.email','review@example.invalid')\n\
-        \    git('config','commit.gpgsign','false')\n    path = repo / '.github/workflows/ci.yml'\n    path.parent.mkdir(parents=True)\n\
-        \    text = 'on: workflow_dispatch\\npermissions: {}\\njobs:\\n  test:\\n    runs-on: ubuntu-latest\\n \
-        \   steps:\\n      - run: echo fixture\\n'\n    if case == 'secret-base-unknown':\n        text = text.replace('echo\
-        \ fixture', 'echo EXPR_OPEN secrets[inputs.which] }}')\n    path.write_text(text.replace('EXPR_OPEN',chr(36)+'{{'))\n\
-        \    git('add','.'); git('commit','-qm','base'); base=git('rev-parse','HEAD')\n    if case == 'error':\n\
-        \        text = 'on: workflow_dispatch\\njobs: [unclosed\\n'\n    elif case == 'secret-partial':\n     \
-        \   text = text.replace('echo fixture', 'echo EXPR_OPEN secrets.NEW_TOKEN }} EXPR_OPEN secrets[inputs.which]\
-        \ }}')\n    elif case == 'secret-base-unknown':\n        text = text.replace('EXPR_OPEN secrets[inputs.which]\
-        \ }}', 'EXPR_OPEN secrets.NEW_TOKEN }}')\n    else:\n        text = text.replace('permissions: {}', 'permissions:\
-        \ {contents: write}')\n    path.write_text(text.replace('EXPR_OPEN',chr(36)+'{{'))\n    git('commit','-qam','head');\
-        \ head=git('rev-parse','HEAD')\n    if case == 'replace-commit': git('replace',head,base)\n    if case ==\
-        \ 'replace-blob':\n        git('replace',git('rev-parse',head+':.github/workflows/ci.yml'),git('rev-parse',base+':.github/workflows/ci.yml'))\n\
-        with open(os.environ['GITHUB_OUTPUT'],'a') as f:\n    f.write(f'base={base}\\nhead={head}\\nrepo={repo}\\\
-        n')\nPYCODE\n"
+      run: "python3 -I - <<'PYCODE'\nimport os, subprocess\nfrom pathlib import Path\ncase = os.environ['CASE']\nheads = {'grants':'8c9cb54049173221ec1144643d2fc6f444b81b15',\n\
+        \         'incomplete':'95197686ac86c09e3c5aa5b6a4648c944b3cefbe',\n         'alias-supported':'50ae76820802d731b68a5101ed9239e6c3dbceac',\
+        \ 'missing':'0'*40}\nbase = '17c331b0529a2f39c6d1db918c8ac876667090c0'\nrepo = Path(os.environ['GITHUB_WORKSPACE'])\n\
+        if case in heads:\n    head = heads[case]\n    if case != 'missing':\n        subprocess.run(['git','-C',str(Path(os.environ['GITHUB_WORKSPACE'])),'fetch','--no-tags','origin',head],\
+        \ check=True)\nelse:\n    repo = Path(os.environ['RUNNER_TEMP']) / 'review-fixture'\n    repo.mkdir()\n    def git(*args):\n\
+        \        return subprocess.check_output(['git','-C',str(repo),*args], text=True).strip()\n    git('init','-q','-b','main')\n\
+        \    git('config','user.name','Review fixture')\n    git('config','user.email','review@example.invalid')\n    git('config','commit.gpgsign','false')\n\
+        \    path = repo / '.github/workflows/ci.yml'\n    path.parent.mkdir(parents=True)\n    text = 'on: workflow_dispatch\\\
+        npermissions: {}\\njobs:\\n  test:\\n    runs-on: ubuntu-latest\\n    steps:\\n      - run: echo fixture\\n'\n   \
+        \ if case == 'secret-base-unknown':\n        text = text.replace('echo fixture', 'echo EXPR_OPEN secrets[inputs.which]\
+        \ }}')\n    path.write_text(text.replace('EXPR_OPEN',chr(36)+'{{'))\n    git('add','.'); git('commit','-qm','base');\
+        \ base=git('rev-parse','HEAD')\n    if case == 'error':\n        text = 'on: workflow_dispatch\\njobs: [unclosed\\\
+        n'\n    elif case == 'secret-partial':\n        text = text.replace('echo fixture', 'echo EXPR_OPEN secrets.NEW_TOKEN\
+        \ }} EXPR_OPEN secrets[inputs.which] }}')\n    elif case == 'secret-base-unknown':\n        text = text.replace('EXPR_OPEN\
+        \ secrets[inputs.which] }}', 'EXPR_OPEN secrets.NEW_TOKEN }}')\n    else:\n        text = text.replace('permissions:\
+        \ {}', 'permissions: {contents: write}')\n    path.write_text(text.replace('EXPR_OPEN',chr(36)+'{{'))\n    git('commit','-qam','head');\
+        \ head=git('rev-parse','HEAD')\n    if case == 'replace-commit': git('replace',head,base)\n    if case == 'replace-blob':\n\
+        \        git('replace',git('rev-parse',head+':.github/workflows/ci.yml'),git('rev-parse',base+':.github/workflows/ci.yml'))\n\
+        with open(os.environ['GITHUB_OUTPUT'],'a') as f:\n    f.write(f'base={base}\\nhead={head}\\nrepo={repo}\\n')\nPYCODE\n"
     - name: Run pinned Action mode
       id: result
       continue-on-error: true
@@ -80,17 +78,15 @@ jobs:
         FINDINGS: ${{ steps.result.outputs.finding-count }}
         REPORT: ${{ steps.result.outputs.report-path }}
         SUMMARY: ${{ steps.result.outputs.summary-path }}
-      run: "python3 -I - <<'PYCODE'\nimport json, os\nfrom pathlib import Path\ncase, mode = os.environ['CASE'],\
-        \ os.environ['MODE']\nexpected = {'grants':('complete','suggested',4),'incomplete':('incomplete','unknown',0),\n\
-        \ 'error':('error','unknown',0),'alias-supported':('complete','none',0),'missing':('error','unknown',0),\n\
+      run: "python3 -I - <<'PYCODE'\nimport json, os\nfrom pathlib import Path\ncase, mode = os.environ['CASE'], os.environ['MODE']\n\
+        expected = {'grants':('complete','suggested',4),'incomplete':('incomplete','unknown',0),\n 'error':('error','unknown',0),'alias-supported':('complete','none',0),'missing':('error','unknown',0),\n\
         \ 'secret-partial':('incomplete','suggested',1),'secret-base-unknown':('incomplete','unknown',0),\n 'replace-commit':('complete','suggested',1),'replace-blob':('complete','suggested',1),\n\
-        \ 'redirected':('complete','suggested',1)}\nstate, review, count = expected[case]\nexit_code = 0 if state\
-        \ == 'complete' else 2\noutcome = 'failure' if mode == 'require-complete' and exit_code else 'success'\n\
-        assert os.environ['STEP_OUTCOME'] == outcome, (case, mode, os.environ['STEP_OUTCOME'])\nassert (os.environ['ANALYSIS'],os.environ['REVIEW'],int(os.environ['FINDINGS']),int(os.environ['EXIT_CODE']))\
-        \ == (state,review,count,exit_code)\nreport = json.loads(Path(os.environ['REPORT']).read_text())\nassert\
-        \ report['analysis'] == state and report['action']['reviewStatus'] == review\nassert len(report['findings'])\
-        \ == count and Path(os.environ['SUMMARY']).is_file()\nif case == 'secret-partial': assert [f['after'] for\
-        \ f in report['findings']] == ['NEW_TOKEN']\nif case in ('replace-commit','replace-blob','redirected'):\n\
-        \    assert [f['after'] for f in report['findings']] == [{'contents':'write'}]\nprint('WPC_CONTRACT_RESULT='\
-        \ + json.dumps({'case':case,'mode':mode,'analysis':state,'review':review,\n 'stepOutcome':outcome,'findings':count,'analysisExit':exit_code,'outputsAvailable':True,'reportsAvailable':True}))\n\
+        \ 'redirected':('complete','suggested',1)}\nstate, review, count = expected[case]\nexit_code = 0 if state == 'complete'\
+        \ else 2\noutcome = 'failure' if mode == 'require-complete' and exit_code else 'success'\nassert os.environ['STEP_OUTCOME']\
+        \ == outcome, (case, mode, os.environ['STEP_OUTCOME'])\nassert (os.environ['ANALYSIS'],os.environ['REVIEW'],int(os.environ['FINDINGS']),int(os.environ['EXIT_CODE']))\
+        \ == (state,review,count,exit_code)\nreport = json.loads(Path(os.environ['REPORT']).read_text())\nassert report['analysis']\
+        \ == state and report['action']['reviewStatus'] == review\nassert len(report['findings']) == count and Path(os.environ['SUMMARY']).is_file()\n\
+        if case == 'secret-partial': assert [f['after'] for f in report['findings']] == ['NEW_TOKEN']\nif case in ('replace-commit','replace-blob','redirected'):\n\
+        \    assert [f['after'] for f in report['findings']] == [{'contents':'write'}]\nprint('WPC_CONTRACT_RESULT=' + json.dumps({'case':case,'mode':mode,'analysis':state,'review':review,\n\
+        \ 'stepOutcome':outcome,'findings':count,'analysisExit':exit_code,'outputsAvailable':True,'reportsAvailable':True}))\n\
         PYCODE\n"
