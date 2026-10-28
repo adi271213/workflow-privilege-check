@@ -1,35 +1,62 @@
 # Contributing
 
-Thanks for your interest. This is a small, deterministic tool; contributions that
-keep it focused, well-tested, and honest about its limits are very welcome.
+Workflow Privilege Check reports selected configuration changes between commits.
+Keep contributions small enough to review and reproduce. A finding is a prompt
+for review, including intentional changes; it is not a vulnerability claim.
 
 ## Development
 
+Use Python 3.11 or newer and Git:
+
 ```sh
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e .
-python scripts/validate.py        # full suite (synthetic acceptance + integration)
-python -m unittest discover -s tests
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -e .
+python scripts/validate.py
+python scripts/offline_smoke.py
 ```
 
-CI runs the suite on Python 3.11–3.14 for every pull request.
+The validator runs the full synthetic, unit and local Git/Action integration
+suite and writes ignored `validation-results.json`. CI repeats it on Python
+3.11 through 3.14 and runs the Action in a disconnected Linux network namespace.
+To run one test file, use `python -m unittest discover -s tests -p 'test_contexts.py'`.
 
-## Guidelines
+See the [architecture](docs/ARCHITECTURE.md) for module responsibilities and trust
+boundaries. The CLI installation uses PyPI; the Action uses its checked-in,
+hash-verified dependency bundle. See [dependency maintenance](vendor/README.md).
 
-- **Scope:** the tool reports the base→head *privilege delta* in GitHub Actions
-  config (triggers, token scopes, secret references, runners and environments). It is not a general linter —
-  broad static checks belong in tools like zizmor.
-- **Determinism:** no network or code execution during analysis; same input, same
-  output. Keep it that way.
-- **Honesty:** a finding is a review prompt, not a vulnerability claim. Don't let
-  messages overstate what is verified.
-- **Tests first:** every rule or parser change needs a regression test. Add cases
-  to `tests/` (see `tests/cases.json`).
+## Changing behavior
 
-## Reporting security issues
+For a rule or parser change, add a regression that demonstrates the issue and a
+nearby case that should stay quiet. Check incomplete/error cases as well as
+findings. Known findings must survive uncertainty in unrelated supported fields.
+Keep analysis deterministic and local: it must not execute proposed code, fetch
+remote dependencies or inspect live repository/cloud policy.
 
-See [SECURITY.md](SECURITY.md). Please do not open public issues for vulnerabilities.
+Update the relevant policy and changelog when supported behavior changes. Keep
+rule IDs stable. Report `schemaVersion` is independent of package version; review
+consumer compatibility before changing the JSON contract. Findings alone must
+not silently become merge enforcement.
 
-See [validation](VALIDATION.md) for offline Action tests and the [benchmark guide](benchmarks/README.md) for the
-hash-pinned historical replay. Runtime dependency updates must preserve vendor
-provenance, license and disconnected-network validation.
+Changes to the calling workflow need tests of its actual shell steps. Action
+controller, installation or dependency changes also need the offline smoke test;
+run the hosted contract and a disposable consumer installation when those paths
+change. [Validation](VALIDATION.md) distinguishes local checks from hosted tests.
+
+For rule changes, replay the [hash-pinned historical cases](benchmarks/README.md).
+Inspect new facts separately from the frozen legacy labels. Do not relabel a case
+just to make a test pass, or describe the replay as independently measured accuracy.
+
+## Pull requests and reports
+
+Explain the observed problem, the resulting behavior and the checks you ran.
+Include a small public or synthetic example for bugs. Avoid credentials, private
+logs and unnecessary repository content. Report vulnerabilities through
+[private security reporting](SECURITY.md).
+
+Changes to release tags, version numbers and installation pins belong in a
+separately validated release. Existing tags and evidence remain reproducible.
+
+Source distributions include the scripts, test fixtures and bundled dependency
+needed to run the same validator after extraction. The installed wheel contains
+the CLI package; it does not install the GitHub Action into site-packages.

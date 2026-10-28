@@ -1,5 +1,13 @@
 # Changes
 
+## Unreleased
+
+- Use the checked-in wheel URL and SHA-256 when refreshing the PyYAML bundle.
+- Explain invalid inputs, fetch failures and moving PR heads in the setup workflow.
+- Include license/source metadata and the fixtures needed to validate a source distribution.
+- Clarify fork-test coverage, security reporting and contributor checks; format the
+  hosted outcome contract as readable YAML without changing its job definitions.
+
 ## 0.0.2 — 2026-10-26
 
 - Preserve runner label/group combinations when comparing matrix selections.
