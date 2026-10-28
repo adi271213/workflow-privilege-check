@@ -25,8 +25,9 @@ Private-repository authentication and arbitrary self-hosted installations are no
 covered by this setup recipe. Do not broaden permissions to force installation.
 
 The calling workflow remains editable in PRs. Pinning the scanner does not make
-that calling workflow an unbypassable boundary. Normal fork approval rules apply;
-current-version fork validation is limited to the explicitly linked release tests.
+that calling workflow an unbypassable boundary. Normal fork approval rules apply.
+Version 0.0.2 has hosted same-repository installation tests, but no fresh fork-PR
+test. Earlier fork runs tested earlier revisions; see [release checks](docs/RELEASE-0.0.2.md).
 
 ## Two onboarding checks
 
@@ -75,11 +76,24 @@ Outputs are `analysis-status`, `review-status`, `finding-count`,
 JSON/Markdown reports stay in the GitHub job logs/summary and job-local files;
 no PR comments, telemetry or external reporting service are used.
 
+## Troubleshooting
+
+If the fetch step says the PR head does not match the event, the PR may have
+changed while the run was starting. Run the workflow for the latest PR revision
+again after GitHub updates the pull ref. Keep the equality check: analyzing a
+different head would give a report for the wrong revision.
+
+If fetching fails, inspect the fetch error and repository visibility. This recipe
+fetches public commits without stored checkout credentials. For an analysis
+`incomplete` or `error`, inspect the summary rather than treating a successful
+advisory step as a clean result. Report ordinary bugs with a small public or
+synthetic reproduction; use [private reporting](SECURITY.md) for vulnerabilities.
+
 ## Coverage and feedback
 
 See [validation](VALIDATION.md), [trigger policy](docs/TRIGGER-POLICY.md),
 [runner/environment policy](docs/CONTEXT-POLICY.md) and [YAML policy](docs/YAML-POLICY.md).
-The installation pin above contains the 0.0.2 runtime, including the runner-matrix correction and bounded aliases.
-The original `v0.0.0` tag remains unchanged and rejects aliases.
+The installation pin above contains the 0.0.2 runtime, with bounded YAML alias support.
+See [known release limitations](docs/KNOWN-LIMITATIONS.md) when reviewing older installations.
 For the optional advisory trial, see [PILOT.md](PILOT.md). No production
 precision/recall or independent human security audit is claimed.

@@ -4,18 +4,16 @@
 
 An experimental, free, MIT-licensed review aid for GitHub
 Actions configuration changes between a PR's exact base and head commits.
-Version **0.0.2** preserves runner label/group combinations across matrix rows
-and includes bounded YAML anchor/alias support.
-
-The [runner-matrix comparison issue in 0.0.1](docs/KNOWN-LIMITATIONS.md) is fixed
-in 0.0.2. Earlier release tags remain unchanged.
-
 It reports selected token, trigger, secret-reference, runner and environment
 changes for a human to inspect. Intended changes are reported too.
 
 This complements [zizmor](https://github.com/zizmorcore/zizmor) and ordinary review.
 It does not establish PR safety, catch arbitrary malicious code, or authorize
 auto-merge. Keep it outside required merge checks during the advisory pilot.
+
+For example, changing a job from `permissions: {contents: read}` to
+`permissions: {contents: write}` produces a WF001 finding for that job. An
+unchanged declaration stays quiet. See a [sample report](examples/sample-report.md).
 
 ## Install
 
@@ -104,4 +102,4 @@ installation checks and the [74-PR historical regression replay](benchmarks/READ
 The replay is selected and self-labeled; it is not production precision/recall.
 Maintainer usefulness and independent human security validation remain unproven.
 
-[Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [MIT license](LICENSE)
+[Contributing](CONTRIBUTING.md) · [Architecture](docs/ARCHITECTURE.md) · [Security](SECURITY.md) · [MIT license](LICENSE)

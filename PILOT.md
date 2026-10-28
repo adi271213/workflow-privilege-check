@@ -3,7 +3,7 @@
 ## Installation
 
 Follow [the complete setup guide](SETUP.md), including its two onboarding checks
-and output interpretation. Existing links to this page remain valid. Keep ordinary
+and output interpretation. Keep ordinary
 review and existing scanners; the Action does not approve PRs or enforce review.
 
 ## Trial and feedback
