@@ -60,3 +60,16 @@ separately validated release. Existing tags and evidence remain reproducible.
 Source distributions include the scripts, test fixtures and bundled dependency
 needed to run the same validator after extraction. The installed wheel contains
 the CLI package; it does not install the GitHub Action into site-packages.
+
+## Repository rules
+
+`main` requires a pull request, resolved review threads and up-to-date Python
+3.11 through 3.14 CI from GitHub Actions. The rules block force pushes and deletion,
+with no bypass actors. The required approval count is currently zero because this
+repository has one maintainer. Requiring a PR does not claim independent review.
+
+For `v*` tags, creation is limited to the release owner's account. Separate rules
+block updates and deletion without a bypass, including for the owner. Repository
+administrators can still edit the rules; these settings protect the release
+process and are not a guarantee against an administrator changing policy.
+See the [active rules](https://github.com/adi271213/workflow-privilege-check/rules).
