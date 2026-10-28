@@ -26,8 +26,10 @@ covered by this setup recipe. Do not broaden permissions to force installation.
 
 The calling workflow remains editable in PRs. Pinning the scanner does not make
 that calling workflow an unbypassable boundary. Normal fork approval rules apply.
-Version 0.0.2 has hosted same-repository installation tests, but no fresh fork-PR
-test. Earlier fork runs tested earlier revisions; see [release checks](docs/RELEASE-0.0.2.md).
+The current setup and pinned 0.0.2 runtime have hosted same-repository and
+[fresh fork-PR tests](docs/FORK-VALIDATION.md). Fork tests cover advisory mode,
+including approval before execution and incomplete/error outcomes; they do not
+validate every repository policy or private-repository installation.
 
 ## Two onboarding checks
 

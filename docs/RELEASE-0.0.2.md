@@ -45,6 +45,8 @@ Fixtures are never dispatched or merged.
 
 Final main CI and released-tag installation checks are recorded in the
 [release notes](https://github.com/adi271213/workflow-privilege-check/releases/tag/v0.0.2).
-No fresh fork test or independent human security audit is claimed.
+At publication, no fresh fork test or independent human security audit was claimed.
+[Post-release fork verification](FORK-VALIDATION.md) subsequently tested the current
+setup with this runtime on 2026-10-28; it is separate from the original release checks.
 Runner/environment associations across matrix rows remain outside the independent
 comparisons; see [known limitations](KNOWN-LIMITATIONS.md).

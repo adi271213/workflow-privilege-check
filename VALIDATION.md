@@ -21,8 +21,10 @@ A hosted consumer test additionally exercises the public pinned composite Action
 trusted-base checkout, exact head fetch and result interpretation. The published
 0.0.2 setup is selected only after candidate consumer tests, both mode contracts
 and CI pass. Current run links are retained in [release verification notes](docs/RELEASE-0.0.2.md).
-Earlier fork runs belong to earlier revisions and are not claimed as new-version
-fork validation. No human security audit or maintainer usefulness result is claimed.
+[Post-release fork checks](docs/FORK-VALIDATION.md) exercise the current setup
+and pinned 0.0.2 runtime in advisory mode, from a separate account and fork.
+Earlier fork runs remain historical evidence for earlier revisions. No human
+security audit or maintainer usefulness result is claimed.
 
 Known limitations include YAML merge keys and over-budget/recursive aliases, edited-rename
 noise, no execution analysis, no cloud authorization or remote environment-policy
