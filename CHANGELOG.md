@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add WF008 for new runner/environment pairings in bounded static matrices when
+  individual target sets stay unchanged. Retain row bindings as evidence and
+  report changed unresolved associations as incomplete.
+
 - Group Markdown findings by workflow/job, show recorded before/after values and
   add rule-specific reviewer guidance. Keep unresolved analysis visible alongside
   known findings; shorten long display values without changing JSON evidence.

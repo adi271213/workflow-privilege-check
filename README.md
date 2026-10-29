@@ -66,6 +66,12 @@ JSON `schemaVersion` identifies the report format independently of the package v
 | WF004 | New per-job literal secret references, workflow-env references or whole-secret forwarding |
 | WF005 | Changed/new self-hosted, custom/group or unresolved runner selections |
 | WF007 | Added, removed or changed environment targets |
+| WF008 (unreleased) | New runner/environment pairings when both individual target sets stay unchanged |
+
+The [association example](docs/ASSOCIATION-ANALYSIS.md) shows a change that swaps
+production onto a self-hosted runner while preserving both individual sets.
+WF008 is available in the unreleased source; the pinned 0.0.2 release does not
+include it.
 
 [Runner/environment policy](docs/CONTEXT-POLICY.md) explains normalization, bounded
 static matrix resolution, symbolic assumptions and uncertainty. Standard hosted

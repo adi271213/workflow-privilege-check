@@ -9,6 +9,7 @@ REVIEW_GUIDANCE = {
     "WF004": "Confirm why the new secret reference or forwarding path is needed. Review its consumer and the applicable secret scope.",
     "WF005": "Confirm the intended runner labels/group, who can schedule work there, and its access to internal resources.",
     "WF007": "Check the selected environment's scoped settings and protection rules. A target change can add or remove access and approval constraints.",
+    "WF008": "Confirm that each newly paired runner should use that environment. Review runner access, environment-scoped settings and protection rules.",
 }
 MAX_VALUE_CHARS = 240
 

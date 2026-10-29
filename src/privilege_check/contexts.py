@@ -107,8 +107,8 @@ def _environment(job):
     return {"names": sorted({x.casefold() for x in names})}, unknown
 
 
-def _runner_targets(job):
-    """Keep label/group conjunctions from each resolved matrix row together."""
+def _runner_targets(job, *, include_environment=False):
+    """Keep resolved selectors from each matrix row together, never cross-join unions."""
     if not job or "runs-on" not in job:
         return []
     value = job["runs-on"]
@@ -116,9 +116,12 @@ def _runner_targets(job):
     labels = value.get("labels", []) if isinstance(value, dict) else value
     if isinstance(labels, str):
         labels = [labels]
-    selectors = labels + ([group] if group is not None else [])
+    environment = job.get("environment") if include_environment else None
+    if isinstance(environment, dict):
+        environment = environment.get("name")
+    selectors = labels + ([group] if group is not None else []) + ([environment] if environment is not None else [])
     rows = _matrix_rows(_matrix(job)) if any(MATRIX.fullmatch(x) for x in selectors) else [{}]
-    # Called only after _runner established that all selections resolve.
+    # Called only after the corresponding resolvers established static values.
     if not rows:
         raise ValueError("Runner target combinations cannot be resolved.")
 
@@ -130,12 +133,41 @@ def _runner_targets(job):
     for row in rows:
         label_set = tuple(sorted({selected(label, row).casefold() for label in labels}))
         groups = (selected(group, row),) if group is not None else ()
-        targets.add((label_set, groups))
-    return [{"labels": list(labels), "groups": list(groups)} for labels, groups in sorted(targets)]
+        name = selected(environment, row).casefold() if environment is not None else None
+        targets.add((label_set, groups, name))
+    return [{"labels": list(labels), "groups": list(groups),
+             **({"environment": name} if include_environment else {})}
+            for labels, groups, name in sorted(targets)]
+
+
+def _context_selection(job):
+    environment = job.get("environment")
+    if isinstance(environment, dict):
+        environment = environment.get("name")
+    return job.get("runs-on"), environment, _matrix(job)
+
+
+def _compare_associations(before, after, unresolved):
+    """Close the equal-marginals gap; individual context changes have their own rules."""
+    if not before or not all(field in job for job in (before, after) for field in ("runs-on", "environment")):
+        return [], []
+    if _context_selection(before) == _context_selection(after):
+        return [], []
+    if not unresolved["runs-on"] and _runner_targets(before) != _runner_targets(after):
+        return [], []
+    if any(unresolved.values()):
+        return [], [("incomplete", "Changed runner/environment associations cannot be fully resolved; only direct static matrix fields are supported.")]
+    old = _runner_targets(before, include_environment=True)
+    new = _runner_targets(after, include_environment=True)
+    if not any(pair not in old for pair in new):
+        return [], []
+    return [{"rule": "WF008", "before": {"pairs": old}, "after": {"pairs": new},
+             "message": "New runner/environment pairing introduced while individual target sets stay unchanged. Review the paired runner and environment-scoped settings; actual access and protection policies are not verified."}], []
 
 
 def compare_contexts(before, after):
     findings, diagnostics, assumptions = [], [], []
+    unresolved = {}
     for field, rule, resolve in (("runs-on", "WF005", _runner), ("environment", "WF007", _environment)):
         try:
             old, old_unknown = resolve(before)
@@ -143,6 +175,7 @@ def compare_contexts(before, after):
         except ValueError as exc:
             diagnostics.append(("error", str(exc)))
             continue
+        unresolved[field] = old_unknown or new_unknown
         old_selector, new_selector = (before or {}).get(field), after.get(field)
         if field == "environment":
             if isinstance(old_selector, dict): old_selector = old_selector.get("name")
@@ -180,4 +213,11 @@ def compare_contexts(before, after):
         else:
             message = "Environment selection changed. Review scoped configuration and approval requirements; secret availability and protection policies are not verified."
         findings.append({"rule": rule, "before": old, "after": new, "message": message})
+    if not findings and not diagnostics:
+        try:
+            changes, issues = _compare_associations(before, after, unresolved)
+            findings.extend(changes)
+            diagnostics.extend(issues)
+        except ValueError as exc:
+            diagnostics.append(("error", str(exc)))
     return findings, diagnostics, assumptions
