@@ -13,7 +13,11 @@ auto-merge. Keep it outside required merge checks during the advisory pilot.
 
 For example, changing a job from `permissions: {contents: read}` to
 `permissions: {contents: write}` produces a WF001 finding for that job. An
-unchanged declaration stays quiet. See a [sample report](examples/sample-report.md).
+unchanged declaration stays quiet. The unreleased Markdown layout groups findings by workflow
+and job, shows the recorded before/after values, and gives reviewer questions for
+each rule. Long values are shortened with a notice; JSON keeps the full evidence.
+See a [sample report](examples/sample-report.md). The pinned 0.0.2 release below
+retains its published report layout.
 
 ## Install
 

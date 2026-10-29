@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Group Markdown findings by workflow/job, show recorded before/after values and
+  add rule-specific reviewer guidance. Keep unresolved analysis visible alongside
+  known findings; shorten long display values without changing JSON evidence.
+
 - Use the checked-in wheel URL and SHA-256 when refreshing the PyYAML bundle.
 - Explain invalid inputs, fetch failures and moving PR heads in the setup workflow.
 - Include license/source metadata and the fixtures needed to validate a source distribution.
