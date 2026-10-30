@@ -26,7 +26,7 @@ out the trusted base and fetches the head as Git data. The Action is pinned to
 the evaluated full commit, not loaded from the proposed checkout.
 
 ```yaml
-- uses: adi271213/workflow-privilege-check@5448750967e3bc7274b213866628fc61f1769882 # v0.0.3
+- uses: adi271213/workflow-privilege-check@ff12d9b482a55777815dd5a1391e058986259320 # v0.0.4
   with:
     mode: advisory
 ```
@@ -69,7 +69,7 @@ JSON `schemaVersion` identifies the report format independently of the package v
 
 The [association example](docs/ASSOCIATION-ANALYSIS.md) shows a change that swaps
 production onto a self-hosted runner while preserving both individual sets.
-Version 0.0.3 includes WF008 and the before/after report.
+Version 0.0.4 includes WF008 and the before/after report, with corrected expression identifier handling.
 
 [Runner/environment policy](docs/CONTEXT-POLICY.md) explains normalization, bounded
 static matrix resolution, symbolic assumptions and uncertainty. Standard hosted
@@ -105,7 +105,7 @@ the tool does not guess repository defaults. Unchanged inherited values for
 matched job IDs compare symbolically under a disclosed fixed-default assumption.
 
 CI covers Python 3.11–3.14 and exercises the Action in a disconnected network
-namespace. [Release checks](docs/RELEASE-0.0.3.md) and [validation method](VALIDATION.md) separate synthetic tests, hosted
+namespace. [Release checks](docs/RELEASE-0.0.4.md) and [validation method](VALIDATION.md) separate synthetic tests, hosted
 installation checks and the [74-PR historical regression replay](benchmarks/README.md).
 The replay is selected and self-labeled; it is not production precision/recall.
 Maintainer usefulness and independent human security validation remain unproven.
