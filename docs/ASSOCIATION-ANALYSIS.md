@@ -1,6 +1,6 @@
 # Runner/environment associations
 
-This unreleased comparison closes a gap in v0.0.2: independent sets can stay the
+Version 0.0.3 closes a gap in v0.0.2: independent sets can stay the
 same while a matrix changes which runner selects each environment.
 
 ```text
@@ -15,7 +15,7 @@ secret is available, or that the change is an exploitable privilege escalation.
 
 ## Reproduce locally
 
-From a development installation of the unreleased source:
+From a local installation of version 0.0.3 or later:
 
 ```sh
 workflow-privilege-check scan --dirs examples/association-base examples/association-head --format markdown
@@ -25,7 +25,7 @@ workflow-privilege-check scan --dirs examples/association-base examples/associat
 The expected result is `analysis: complete`, `review: suggested`, with one WF008
 finding for job `deploy`. Its before/after values retain the resolved pairs.
 The fixture files are synthetic input data; the scanner does not execute them.
-The published v0.0.2 tag and recommended installation pin do not contain WF008.
+Earlier v0.0.2 installations do not contain WF008.
 
 ## Bounded comparison
 

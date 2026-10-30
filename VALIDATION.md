@@ -10,7 +10,7 @@ Three different checks answer different questions:
    `python scripts/offline_smoke.py --network-namespace`. The latter runs the
    actual controller as an unprivileged process in a disconnected Linux network
    namespace, in both modes, against local Git fixtures. It validates outputs and
-   token/runner/environment findings, the unreleased association finding and
+   token/runner/environment findings, the association finding and
    unresolved-association outcomes without pip or external site packages in
    the controller. `python scripts/offline_smoke.py` provides a local smoke test
    without the Linux-only isolation assertion.
@@ -20,10 +20,10 @@ Three different checks answer different questions:
 
 A hosted consumer test additionally exercises the public pinned composite Action,
 trusted-base checkout, exact head fetch and result interpretation. The published
-0.0.2 setup is selected only after candidate consumer tests, both mode contracts
-and CI pass. Current run links are retained in [release verification notes](docs/RELEASE-0.0.2.md).
-[Post-release fork checks](docs/FORK-VALIDATION.md) exercise the current setup
-and pinned 0.0.2 runtime in advisory mode, from a separate account and fork.
+0.0.3 setup is selected only after candidate consumer tests, both mode contracts
+and CI pass. Current run links are retained in [release verification notes](docs/RELEASE-0.0.3.md).
+[Historical post-release fork checks](docs/FORK-VALIDATION.md) separately cover
+the 0.0.2 runtime in advisory mode, from a different account and fork.
 Earlier fork runs remain historical evidence for earlier revisions. No human
 security audit or maintainer usefulness result is claimed.
 

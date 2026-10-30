@@ -21,16 +21,16 @@ includes the changed targets in WF005 findings. It does not query runner
 inventory or prove that a newly selected runner exists or has more authority.
 The published 0.0.1 tag remains unchanged.
 
-## Runner/environment associations in 0.0.2 (fix unreleased)
+## Runner/environment associations in 0.0.2 (fixed in 0.0.3)
 
 The published 0.0.2 version compares runner and environment selections
 independently. It can miss swapping `production` and `staging` between
 `ubuntu-latest` and `self-hosted` when both individual sets remain unchanged.
 
-The unreleased WF008 compares resolved runner/environment pairs within supported
+Version 0.0.3 adds WF008, which compares resolved runner/environment pairs within supported
 static matrix rows. See the [reproduction and boundaries](ASSOCIATION-ANALYSIS.md).
 It does not trace secret delivery, inspect remote environment policy or establish
-actual runtime access. The published tags and installation pin remain unchanged.
+actual runtime access. Earlier release tags remain unchanged.
 
 For the broader supported scope, see [README](../README.md#coverage),
 [runner/environment policy](CONTEXT-POLICY.md) and [YAML policy](YAML-POLICY.md).

@@ -13,11 +13,10 @@ auto-merge. Keep it outside required merge checks during the advisory pilot.
 
 For example, changing a job from `permissions: {contents: read}` to
 `permissions: {contents: write}` produces a WF001 finding for that job. An
-unchanged declaration stays quiet. The unreleased Markdown layout groups findings by workflow
+unchanged declaration stays quiet. The Markdown report groups findings by workflow
 and job, shows the recorded before/after values, and gives reviewer questions for
 each rule. Long values are shortened with a notice; JSON keeps the full evidence.
-See a [sample report](examples/sample-report.md). The pinned 0.0.2 release below
-retains its published report layout.
+See a [sample report](examples/sample-report.md).
 
 ## Install
 
@@ -27,7 +26,7 @@ out the trusted base and fetches the head as Git data. The Action is pinned to
 the evaluated full commit, not loaded from the proposed checkout.
 
 ```yaml
-- uses: adi271213/workflow-privilege-check@edd446b3273f53c5b3fa7cda9d45bc62cfbc8d9f # v0.0.2
+- uses: adi271213/workflow-privilege-check@5448750967e3bc7274b213866628fc61f1769882 # v0.0.3
   with:
     mode: advisory
 ```
@@ -66,12 +65,11 @@ JSON `schemaVersion` identifies the report format independently of the package v
 | WF004 | New per-job literal secret references, workflow-env references or whole-secret forwarding |
 | WF005 | Changed/new self-hosted, custom/group or unresolved runner selections |
 | WF007 | Added, removed or changed environment targets |
-| WF008 (unreleased) | New runner/environment pairings when both individual target sets stay unchanged |
+| WF008 | New runner/environment pairings when both individual target sets stay unchanged |
 
 The [association example](docs/ASSOCIATION-ANALYSIS.md) shows a change that swaps
 production onto a self-hosted runner while preserving both individual sets.
-WF008 is available in the unreleased source; the pinned 0.0.2 release does not
-include it.
+Version 0.0.3 includes WF008 and the before/after report.
 
 [Runner/environment policy](docs/CONTEXT-POLICY.md) explains normalization, bounded
 static matrix resolution, symbolic assumptions and uncertainty. Standard hosted
@@ -107,7 +105,7 @@ the tool does not guess repository defaults. Unchanged inherited values for
 matched job IDs compare symbolically under a disclosed fixed-default assumption.
 
 CI covers Python 3.11–3.14 and exercises the Action in a disconnected network
-namespace. [Release checks](docs/RELEASE-0.0.2.md) and [validation method](VALIDATION.md) separate synthetic tests, hosted
+namespace. [Release checks](docs/RELEASE-0.0.3.md) and [validation method](VALIDATION.md) separate synthetic tests, hosted
 installation checks and the [74-PR historical regression replay](benchmarks/README.md).
 The replay is selected and self-labeled; it is not production precision/recall.
 Maintainer usefulness and independent human security validation remain unproven.

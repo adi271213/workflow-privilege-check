@@ -16,7 +16,7 @@ execute a workflow or determine whether a PR is safe.
 4. `scan.py` skips unchanged files, matches exact-content renames, parses changed
    YAML and compares supported fields per job. `yaml_limits.py` bounds the whole
    composed graph before construction. `contexts.py` handles runner/environment
-   normalization and bounded static matrices. The unreleased association rule
+   normalization and bounded static matrices. The association rule
    retains runner/environment bindings from each row when comparing unchanged
    individual target sets.
 5. `report.py` escapes repository-controlled text for Markdown. The CLI emits

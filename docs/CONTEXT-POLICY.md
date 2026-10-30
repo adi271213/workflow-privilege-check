@@ -1,6 +1,6 @@
 # Runner and environment context policy
 
-WF005, WF007 and the unreleased WF008 identify review-sensitive configured contexts, not verified
+WF005, WF007 and WF008 identify review-sensitive configured contexts, not verified
 privilege escalation. They do not query GitHub runner inventory, environment
 secrets, deployment approvals, branch rules or effective access.
 
@@ -34,7 +34,7 @@ selected environment changes; WF007 is independent of WF004.
 Environment URL/deployment metadata, remote policy changes and actual availability
 remain outside the comparison. No secret values are retrieved.
 
-## WF008 — runner/environment associations (unreleased)
+## WF008 — runner/environment associations (0.0.3)
 
 When individual runner targets and environment-name sets stay unchanged, a new
 pairing between them merits review. The comparison retains the labels, group
@@ -51,16 +51,16 @@ of at most 256 combinations. Exclusions apply before includes; includes augment
 compatible original combinations or append a combination. Other expressions,
 non-string selection results, empty selections and oversized/dynamic matrices
 cannot be fully resolved.
-The unreleased resolver follows GitHub's case-insensitive matrix variable names.
+Since 0.0.3, the resolver follows GitHub's case-insensitive matrix variable names.
 Ambiguous duplicate names that differ only by case remain incomplete.
 
 Runner comparisons preserve label/group combinations within each matrix row. An equal combined set of labels does not establish equal runner selections.
 When only the combinations change, WF005 includes the individual `targets` in
 its before/after values. Row ordering, duplicates and unrelated matrix fields
 do not create findings. See the [0.0.1 limitation](KNOWN-LIMITATIONS.md).
-The unreleased WF008 additionally preserves runner/environment pairings within
+WF008 additionally preserves runner/environment pairings within
 supported static matrix rows. It does not trace which secrets reach a runner.
-The published 0.0.2 installation still compares the two selections independently.
+Earlier 0.0.2 installations compare the two selections independently.
 
 A changed unresolved selector is incomplete and still reports the known selector
 change. If an unchanged selector's matrix changes but targets cannot be resolved,

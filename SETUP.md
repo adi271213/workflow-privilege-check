@@ -12,7 +12,7 @@ Copy [the complete workflow](examples/github-action-template.yml) to
 step is already pinned to this evaluated source:
 
 ```text
-adi271213/workflow-privilege-check@edd446b3273f53c5b3fa7cda9d45bc62cfbc8d9f
+adi271213/workflow-privilege-check@5448750967e3bc7274b213866628fc61f1769882
 ```
 
 Keep `mode: advisory`, `contents: read`, the trusted-base checkout, exact head
@@ -26,8 +26,8 @@ covered by this setup recipe. Do not broaden permissions to force installation.
 
 The calling workflow remains editable in PRs. Pinning the scanner does not make
 that calling workflow an unbypassable boundary. Normal fork approval rules apply.
-The current setup and pinned 0.0.2 runtime have hosted same-repository and
-[fresh fork-PR tests](docs/FORK-VALIDATION.md). Fork tests cover advisory mode,
+The 0.0.3 [release checks](docs/RELEASE-0.0.3.md) record the current setup and
+pinned runtime installation tests, including fresh fork PRs. Fork tests cover advisory mode,
 including approval before execution and incomplete/error outcomes; they do not
 validate every repository policy or private-repository installation.
 
@@ -95,7 +95,8 @@ synthetic reproduction; use [private reporting](SECURITY.md) for vulnerabilities
 
 See [validation](VALIDATION.md), [trigger policy](docs/TRIGGER-POLICY.md),
 [runner/environment policy](docs/CONTEXT-POLICY.md) and [YAML policy](docs/YAML-POLICY.md).
-The installation pin above contains the 0.0.2 runtime, with bounded YAML alias support.
+The installation pin above contains the 0.0.3 runtime, including bounded YAML
+alias support and runner/environment association findings.
 See [known release limitations](docs/KNOWN-LIMITATIONS.md) when reviewing older installations.
 For the optional advisory trial, see [PILOT.md](PILOT.md). No production
 precision/recall or independent human security audit is claimed.

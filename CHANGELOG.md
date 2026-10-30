@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.0.3 — 2026-10-30
+
 - Add WF008 for new runner/environment pairings in bounded static matrices when
   individual target sets stay unchanged. Retain row bindings as evidence and
   report changed unresolved associations as incomplete.

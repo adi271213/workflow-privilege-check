@@ -42,7 +42,7 @@ jobs:
           fi
       - name: Report configured changes (advisory)
         id: privilege
-        uses: adi271213/workflow-privilege-check@edd446b3273f53c5b3fa7cda9d45bc62cfbc8d9f # v0.0.2
+        uses: adi271213/workflow-privilege-check@5448750967e3bc7274b213866628fc61f1769882 # v0.0.3
         with:
           mode: advisory
       - name: Explain the result

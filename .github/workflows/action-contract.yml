@@ -23,6 +23,8 @@ jobs:
         - replace-blob
         - redirected
         - alias-supported
+        - association
+        - association-unresolved
     steps:
     - name: Checkout public consumer objects
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -61,6 +63,14 @@ jobs:
             path = repo / '.github/workflows/ci.yml'
             path.parent.mkdir(parents=True)
             text = 'on: workflow_dispatch\npermissions: {}\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo fixture\n'
+            if case in ('association', 'association-unresolved'):
+                text = ('on: workflow_dispatch\npermissions: {}\njobs:\n  test:\n'
+                        '    strategy:\n      matrix:\n        include:\n'
+                        '          - runner: ubuntu-latest\n            target: production\n'
+                        '          - runner: self-hosted\n            target: staging\n'
+                        '    runs-on: EXPR_OPEN matrix.runner }}\n'
+                        '    environment: EXPR_OPEN matrix.target }}\n'
+                        '    steps: [{run: echo fixture}]\n')
             if case == 'secret-base-unknown':
                 text = text.replace('echo fixture', 'echo EXPR_OPEN secrets[inputs.which] }}')
             path.write_text(text.replace('EXPR_OPEN',chr(36)+'{{'))
@@ -71,6 +81,12 @@ jobs:
                 text = text.replace('echo fixture', 'echo EXPR_OPEN secrets.NEW_TOKEN }} EXPR_OPEN secrets[inputs.which] }}')
             elif case == 'secret-base-unknown':
                 text = text.replace('EXPR_OPEN secrets[inputs.which] }}', 'EXPR_OPEN secrets.NEW_TOKEN }}')
+            elif case == 'association':
+                text = (text.replace('target: production', 'target: temporary')
+                            .replace('target: staging', 'target: production')
+                            .replace('target: temporary', 'target: staging'))
+            elif case == 'association-unresolved':
+                text = text.replace('runner: ubuntu-latest', 'runner: {name: ubuntu-latest}')
             else:
                 text = text.replace('permissions: {}', 'permissions: {contents: write}')
             path.write_text(text.replace('EXPR_OPEN',chr(36)+'{{'))
@@ -84,7 +100,7 @@ jobs:
     - name: Run pinned Action mode
       id: result
       continue-on-error: true
-      uses: adi271213/workflow-privilege-check@edd446b3273f53c5b3fa7cda9d45bc62cfbc8d9f
+      uses: adi271213/workflow-privilege-check@5448750967e3bc7274b213866628fc61f1769882
       with:
         mode: ${{ matrix.mode }}
         base: ${{ steps.refs.outputs.base }}
@@ -114,7 +130,8 @@ jobs:
          'error':('error','unknown',0),'alias-supported':('complete','none',0),'missing':('error','unknown',0),
          'secret-partial':('incomplete','suggested',1),'secret-base-unknown':('incomplete','unknown',0),
          'replace-commit':('complete','suggested',1),'replace-blob':('complete','suggested',1),
-         'redirected':('complete','suggested',1)}
+         'redirected':('complete','suggested',1), 'association':('complete','suggested',1),
+         'association-unresolved':('incomplete','unknown',0)}
         state, review, count = expected[case]
         exit_code = 0 if state == 'complete' else 2
         outcome = 'failure' if mode == 'require-complete' and exit_code else 'success'
@@ -126,6 +143,7 @@ jobs:
         if case == 'secret-partial': assert [f['after'] for f in report['findings']] == ['NEW_TOKEN']
         if case in ('replace-commit','replace-blob','redirected'):
             assert [f['after'] for f in report['findings']] == [{'contents':'write'}]
+        if case == 'association': assert [f['rule'] for f in report['findings']] == ['WF008']
         print('WPC_CONTRACT_RESULT=' + json.dumps({'case':case,'mode':mode,'analysis':state,'review':review,
          'stepOutcome':outcome,'findings':count,'analysisExit':exit_code,'outputsAvailable':True,'reportsAvailable':True}))
         PYCODE
