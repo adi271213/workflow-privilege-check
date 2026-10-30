@@ -14,6 +14,8 @@ Three different checks answer different questions:
    unresolved-association outcomes without pip or external site packages in
    the controller. `python scripts/offline_smoke.py` provides a local smoke test
    without the Linux-only isolation assertion.
+   The current smoke test has six cases in two modes: 12 isolated outcomes per
+   Python version. These counts are separate from the hosted contract.
 3. [The 74-PR replay](benchmarks/README.md) verifies frozen public workflow hashes
    and exact legacy configured facts. It is selected, correlated and self-labeled,
    and not a production accuracy measurement. New context findings are separate.
@@ -26,6 +28,12 @@ and CI pass. Current run links are retained in [release verification notes](docs
 the 0.0.2 runtime in advisory mode, from a different account and fork.
 Earlier fork runs remain historical evidence for earlier revisions. No human
 security audit or maintainer usefulness result is claimed.
+
+The manual hosted contract builds local Git inputs from `tests/hosted_cases.json`
+using `scripts/hosted_fixture.py`; it does not require a disposable repository.
+Its 16 cases run in both modes (32 jobs). `tests/test_hosted_fixtures.py` also runs
+those Git fixtures through the actual controller locally. These synthetic cases
+are correctness regressions, not independent security labels.
 
 Known limitations include YAML merge keys and over-budget/recursive aliases, edited-rename
 noise, no execution analysis, no cloud authorization or remote environment-policy

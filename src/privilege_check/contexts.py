@@ -1,6 +1,7 @@
 """Configured runner/environment changes, without inventory or runtime claims."""
 import re
 from itertools import product
+from .expressions import IDENTIFIER
 
 # A deliberately explicit convention list, not discovery of runner ownership.
 # Unknown/custom labels and groups merit review instead of being called self-hosted.
@@ -10,7 +11,7 @@ windows-2025-vs2026 windows-11-arm windows-11-vs2026-arm macos-latest macos-13
 macos-14 macos-15 macos-26 xcode-27
 macos-15-intel macos-26-intel macos-14-large macos-14-xlarge macos-15-large
 macos-15-xlarge macos-26-large macos-26-xlarge""".split())
-MATRIX = re.compile(r"\s*\$\{\{\s*(?i:matrix)\.([A-Za-z_][A-Za-z0-9_]*)\s*\}\}\s*")
+MATRIX = re.compile(r"\s*\$\{\{\s*(?i:matrix)\.(" + IDENTIFIER + r")\s*\}\}\s*")
 
 
 def _matrix(job):

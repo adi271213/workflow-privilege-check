@@ -1,5 +1,20 @@
 # Known release limitations
 
+## Expression identifiers in 0.0.3 and earlier (fixed in 0.0.4)
+
+The secret-reference lexer split hyphenated property names. For example,
+`${{ inputs.use-secrets }}` was mistaken for a whole-secret reference. When
+present in the base, that false baseline could suppress a new literal reference
+such as `${{ secrets.DEPLOY_KEY }}` and return `complete / none`. Adding only the
+input reference could also produce a false WF004 finding.
+
+Version 0.0.4 keeps full identifiers intact and adds regressions for false
+references, missed literal additions, quoted text and dynamic selectors.
+It also resolves direct hyphenated matrix fields; older versions report those
+changed matrices as incomplete rather than detecting their static associations.
+Existing release tags stay unchanged. Upgrade the evaluated installation pin;
+a successful report from an older version does not rule out this limitation.
+
 ## Runner matrix combinations in 0.0.1 (fixed in 0.0.2)
 
 WF005 in 0.0.1 compares the combined labels and groups across matrix rows. It can
