@@ -54,7 +54,8 @@ cannot be fully resolved.
 Since 0.0.3, the resolver follows GitHub's case-insensitive matrix variable names.
 Ambiguous duplicate names that differ only by case remain incomplete.
 Since 0.0.4, direct field names also accept hyphens, for example
-`${{ matrix.runner-name }}`, as allowed by GitHub's expression property syntax.
+`${{ matrix.runner-name }}`, as allowed by
+[GitHub's expression property syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#available-contexts).
 
 Runner comparisons preserve label/group combinations within each matrix row. An equal combined set of labels does not establish equal runner selections.
 When only the combinations change, WF005 includes the individual `targets` in

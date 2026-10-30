@@ -19,6 +19,8 @@ execute a workflow or determine whether a PR is safe.
    normalization and bounded static matrices. The association rule
    retains runner/environment bindings from each row when comparing unchanged
    individual target sets.
+   `expressions.py` shares the supported identifier grammar between secret
+   reference scanning and direct matrix selection; neither evaluates expressions.
 5. `report.py` escapes repository-controlled text for Markdown. The CLI emits
    JSON or Markdown. The Action controller publishes explicit analysis/review
    outcomes, report paths and a job summary.
