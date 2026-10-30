@@ -32,6 +32,7 @@ LIMITATIONS = [
     "Trigger review covers selected event names only: " + ", ".join(sorted(REVIEW_TRIGGERS)) + ".",
     "Runner ownership/inventory and environment secret/protection settings are not observed. Standard runner labels follow a documented convention list.",
     "Only direct static matrix fields resolve runner/environment expressions; unchanged unresolved selections compare symbolically under fixed external context.",
+    "Runner/environment association comparison covers supported static rows with unchanged individual target sets; it does not trace secret delivery or runtime reachability.",
 ]
 
 

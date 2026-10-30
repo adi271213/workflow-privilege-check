@@ -1,6 +1,6 @@
 # Runner and environment context policy
 
-WF005 and WF007 identify review-sensitive configured contexts, not verified
+WF005, WF007 and the unreleased WF008 identify review-sensitive configured contexts, not verified
 privilege escalation. They do not query GitHub runner inventory, environment
 secrets, deployment approvals, branch rules or effective access.
 
@@ -34,6 +34,16 @@ selected environment changes; WF007 is independent of WF004.
 Environment URL/deployment metadata, remote policy changes and actual availability
 remain outside the comparison. No secret values are retrieved.
 
+## WF008 — runner/environment associations (unreleased)
+
+When individual runner targets and environment-name sets stay unchanged, a new
+pairing between them merits review. The comparison retains the labels, group
+and environment from each resolved matrix row. Before/after `pairs` provide
+configured evidence; they do not prove secret delivery or runtime authority.
+Removing pairs alone does not introduce an association finding. Changes already
+reported by WF005 or WF007 are not duplicated. See the
+[reproducible example and boundaries](ASSOCIATION-ANALYSIS.md).
+
 ## Expressions and matrices
 
 Direct `${{ matrix.field }}` string selections resolve against literal matrices
@@ -41,13 +51,16 @@ of at most 256 combinations. Exclusions apply before includes; includes augment
 compatible original combinations or append a combination. Other expressions,
 non-string selection results, empty selections and oversized/dynamic matrices
 cannot be fully resolved.
+The unreleased resolver follows GitHub's case-insensitive matrix variable names.
+Ambiguous duplicate names that differ only by case remain incomplete.
 
 Runner comparisons preserve label/group combinations within each matrix row. An equal combined set of labels does not establish equal runner selections.
 When only the combinations change, WF005 includes the individual `targets` in
 its before/after values. Row ordering, duplicates and unrelated matrix fields
 do not create findings. See the [0.0.1 limitation](KNOWN-LIMITATIONS.md).
-Runner and environment selections are compared independently; the tool does not
-trace which environment or secret reaches a particular runner across matrix rows.
+The unreleased WF008 additionally preserves runner/environment pairings within
+supported static matrix rows. It does not trace which secrets reach a runner.
+The published 0.0.2 installation still compares the two selections independently.
 
 A changed unresolved selector is incomplete and still reports the known selector
 change. If an unchanged selector's matrix changes but targets cannot be resolved,
@@ -55,6 +68,8 @@ the result is incomplete without inventing a target-change finding. Identical
 unresolved selector/matrix pairs compare symbolically, disclosing an assumption
 that external runtime context is fixed. Runtime expression evaluation is never
 performed. Unresolved changes remain incomplete.
+If individually unchanged target sets cannot establish a changed association
+because a selector is unresolved, the association comparison is also incomplete.
 
 References: [runner selection](https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job)
 and [environment protection/secrets](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments).

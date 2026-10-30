@@ -10,7 +10,8 @@ Three different checks answer different questions:
    `python scripts/offline_smoke.py --network-namespace`. The latter runs the
    actual controller as an unprivileged process in a disconnected Linux network
    namespace, in both modes, against local Git fixtures. It validates outputs and
-   token/runner/environment findings without pip or external site packages in
+   token/runner/environment findings, the unreleased association finding and
+   unresolved-association outcomes without pip or external site packages in
    the controller. `python scripts/offline_smoke.py` provides a local smoke test
    without the Linux-only isolation assertion.
 3. [The 74-PR replay](benchmarks/README.md) verifies frozen public workflow hashes
