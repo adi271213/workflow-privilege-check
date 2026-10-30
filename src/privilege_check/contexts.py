@@ -10,7 +10,7 @@ windows-2025-vs2026 windows-11-arm windows-11-vs2026-arm macos-latest macos-13
 macos-14 macos-15 macos-26 xcode-27
 macos-15-intel macos-26-intel macos-14-large macos-14-xlarge macos-15-large
 macos-15-xlarge macos-26-large macos-26-xlarge""".split())
-MATRIX = re.compile(r"\s*\$\{\{\s*matrix\.([A-Za-z_][A-Za-z0-9_]*)\s*\}\}\s*")
+MATRIX = re.compile(r"\s*\$\{\{\s*(?i:matrix)\.([A-Za-z_][A-Za-z0-9_]*)\s*\}\}\s*")
 
 
 def _matrix(job):
@@ -20,17 +20,23 @@ def _matrix(job):
 
 def _matrix_rows(matrix):
     """Expand a small literal matrix using GitHub's exclude/include ordering."""
+    def fields(mapping):
+        folded = {key.casefold(): value for key, value in mapping.items()}
+        return folded if len(folded) == len(mapping) else None
+
     def dynamic(value):
         if isinstance(value, str): return "${{" in value
         if isinstance(value, dict): return any(dynamic(x) for x in value.values())
         if isinstance(value, list): return any(dynamic(x) for x in value)
         return False
     if dynamic(matrix): return None
-    axes = {k: v for k, v in matrix.items() if k not in ("include", "exclude")}
+    axes = fields({k: v for k, v in matrix.items() if k not in ("include", "exclude")})
     include, exclude = matrix.get("include", []), matrix.get("exclude", [])
-    if any(not isinstance(v, list) or not v for v in axes.values()): return None
+    if axes is None or any(not isinstance(v, list) or not v for v in axes.values()): return None
     if any(not isinstance(v, list) or len(v) > 256 or any(not isinstance(x, dict) for x in v)
            for v in (include, exclude)): return None
+    include, exclude = ([fields(item) for item in items] for items in (include, exclude))
+    if any(item is None for item in include + exclude): return None
     size = 1
     for values in axes.values():
         size *= len(values)
@@ -58,7 +64,7 @@ def _options(value, job):
     matrix = _matrix(job)
     if not match or not isinstance(matrix, dict):
         return [], True
-    field = match.group(1)
+    field = match.group(1).casefold()
     rows = _matrix_rows(matrix)
     if not rows or any(field not in row for row in rows):
         return [], True
@@ -127,7 +133,7 @@ def _runner_targets(job, *, include_environment=False):
 
     def selected(text, row):
         match = MATRIX.fullmatch(text)
-        return row[match.group(1)] if match else text
+        return row[match.group(1).casefold()] if match else text
 
     targets = set()
     for row in rows:
@@ -141,10 +147,26 @@ def _runner_targets(job, *, include_environment=False):
 
 
 def _context_selection(job):
+    def selector(value, *, fold=False):
+        match = MATRIX.fullmatch(value)
+        if match:
+            return "matrix", match.group(1).casefold()
+        if "${{" in value:
+            return "expression", value
+        return "literal", value.casefold() if fold else value
+
+    runner = job.get("runs-on")
+    group = runner.get("group") if isinstance(runner, dict) else None
+    labels = runner.get("labels", []) if isinstance(runner, dict) else runner
+    if isinstance(labels, str):
+        labels = [labels]
+    # Normalize syntax without erasing which matrix field each row selects.
+    runner = (tuple(sorted({selector(label, fold=True) for label in labels})),
+              selector(group) if group is not None else None)
     environment = job.get("environment")
     if isinstance(environment, dict):
         environment = environment.get("name")
-    return job.get("runs-on"), environment, _matrix(job)
+    return runner, selector(environment, fold=True), _matrix(job)
 
 
 def _compare_associations(before, after, unresolved):

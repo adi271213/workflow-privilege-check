@@ -45,6 +45,11 @@ Changed associations involving an unresolved selector remain incomplete when
 their relationship cannot be established. They do not receive invented pairs.
 Identical unresolved selectors and matrices can still compare symbolically
 under the existing disclosed fixed-context assumption.
+Equivalent label/name case, runner string/list/mapping forms and whitespace in
+direct matrix references do not create association uncertainty. Matrix variable
+names resolve case-insensitively; conflicting duplicate names are incomplete.
+Distinct matrix field bindings remain distinct, so rebinding rows is still
+compared.
 
 ## Assessment boundary
 

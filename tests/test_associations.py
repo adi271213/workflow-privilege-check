@@ -1,6 +1,7 @@
 """Regressions for runner/environment bindings, rather than independent sets."""
 from itertools import combinations
 from pathlib import Path
+import random
 import sys
 import unittest
 import yaml
@@ -138,12 +139,69 @@ class Associations(unittest.TestCase):
         self.assertEqual((report['analysis'], report['findings']), ('complete', []))
         self.assertTrue(report['assumptions'])
 
+    def test_equivalent_selectors_do_not_make_unchanged_unknown_context_incomplete(self):
+        for runner_before, runner_after, env_before, env_after in (
+                ('self-hosted', 'SELF-HOSTED', '${{ vars.TARGET }}', '${{ vars.TARGET }}'),
+                ('self-hosted', {'labels': ['SELF-HOSTED', 'self-hosted']}, '${{ vars.TARGET }}', '${{ vars.TARGET }}'),
+                ('${{ vars.RUNNER }}', '${{ vars.RUNNER }}', 'production', {'name': 'PRODUCTION'}),
+                ('${{ matrix.runner }}', '${{matrix.runner}}', '${{ vars.TARGET }}', '${{ vars.TARGET }}')):
+            with self.subTest(runner=runner_after, environment=env_after):
+                report = scan(workflow(BASE, runner=runner_before, environment=env_before),
+                              workflow(BASE, runner=runner_after, environment=env_after))
+                self.assertEqual((report['analysis'], report['findings']), ('complete', []))
+                self.assertEqual(report['diagnostics'], [])
+                self.assertTrue(report['assumptions'])
+
     def test_dynamic_or_missing_matrix_values_remain_incomplete(self):
         for rows in ([{**BASE[0], 'target': '${{ vars.TARGET }}'}, BASE[1]],
                      [BASE[0], {'runner': 'self-hosted'}]):
             report = scan(workflow(BASE), workflow(rows))
             self.assertEqual(report['analysis'], 'incomplete')
             self.assertNotIn('WF008', [f['rule'] for f in report['findings']])
+
+    def test_matrix_variable_names_are_case_insensitive(self):
+        before = [{'Runner': r['runner'], 'TARGET': r['target']} for r in BASE]
+        after = [{'Runner': r['runner'], 'TARGET': r['target']} for r in SWAPPED]
+        report = scan(workflow(before, runner='${{ MATRIX.RUNNER }}'), workflow(after, runner='${{ matrix.runner }}'))
+        self.assertEqual((report['analysis'], [f['rule'] for f in report['findings']]), ('complete', ['WF008']))
+        axes = {'Runner': ['ubuntu-latest', 'self-hosted'], 'TARGET': ['staging', 'production']}
+        report = scan(workflow(matrix={**axes, 'exclude': after}), workflow(matrix={**axes, 'exclude': before}))
+        self.assertEqual([f['rule'] for f in report['findings']], ['WF008'])
+        report = scan(workflow(BASE, environment='${{ vars.TARGET }}'),
+                      workflow(BASE, runner='${{ MATRIX.RUNNER }}', environment='${{ vars.TARGET }}'))
+        self.assertEqual((report['analysis'], report['findings']), ('complete', []))
+
+    def test_ambiguous_case_duplicate_matrix_fields_are_incomplete(self):
+        for matrix in ({'runner': ['ubuntu-latest'], 'RUNNER': ['self-hosted'], 'target': ['production']},
+                       {'include': [{'runner': 'ubuntu-latest', 'RUNNER': 'self-hosted', 'target': 'production'}]}):
+            report = scan(workflow(BASE), workflow(matrix=matrix))
+            self.assertEqual(report['analysis'], 'incomplete')
+            self.assertNotIn('WF008', [f['rule'] for f in report['findings']])
+
+    def test_equivalent_axes_exclusions_and_include_representations(self):
+        edges = BASE + SWAPPED
+        for count in range(1, 5):
+            for rows in combinations(edges, count):
+                excluded = [row for row in edges if row not in rows]
+                matrix = {'runner': ['ubuntu-latest', 'self-hosted'], 'target': ['staging', 'production'],
+                          'exclude': excluded, 'include': list(rows)}
+                report = scan(workflow(list(rows)), workflow(matrix=matrix))
+                self.assertEqual((report['analysis'], report['findings']), ('complete', []))
+
+    def test_seeded_three_by_three_relations_preserve_new_pair_detection(self):
+        rng = random.Random(7081)
+        runners, environments = ['ubuntu-latest', 'self-hosted', 'internal'], ['production', 'staging', 'test']
+        edges = [(r, e) for r in runners for e in environments]
+        for _ in range(200):
+            relations = []
+            for _ in range(2):
+                permutation = rng.sample(environments, len(environments))
+                pairs = set(zip(runners, permutation)) | set(rng.sample(edges, rng.randrange(10)))
+                relations.append(pairs)
+            before, after = [[{'runner': r, 'target': e} for r, e in sorted(pairs)] for pairs in relations]
+            report = scan(workflow(before), workflow(after))
+            self.assertEqual(report['analysis'], 'complete')
+            self.assertEqual([f['rule'] for f in report['findings']], ['WF008'] if relations[1] - relations[0] else [])
 
     def test_matrix_bound_is_enforced_for_joint_comparison(self):
         rows = [{'runner': 'self-hosted' if i % 2 else 'ubuntu-latest', 'target': 'env-' + str(i)} for i in range(256)]

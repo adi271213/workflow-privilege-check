@@ -5,6 +5,9 @@
 - Add WF008 for new runner/environment pairings in bounded static matrices when
   individual target sets stay unchanged. Retain row bindings as evidence and
   report changed unresolved associations as incomplete.
+  Normalize equivalent selector forms before assessing association uncertainty.
+- Resolve direct matrix variable names case-insensitively. Treat conflicting
+  duplicate field names as incomplete instead of selecting an arbitrary value.
 
 - Group Markdown findings by workflow/job, show recorded before/after values and
   add rule-specific reviewer guidance. Keep unresolved analysis visible alongside

@@ -51,6 +51,8 @@ of at most 256 combinations. Exclusions apply before includes; includes augment
 compatible original combinations or append a combination. Other expressions,
 non-string selection results, empty selections and oversized/dynamic matrices
 cannot be fully resolved.
+The unreleased resolver follows GitHub's case-insensitive matrix variable names.
+Ambiguous duplicate names that differ only by case remain incomplete.
 
 Runner comparisons preserve label/group combinations within each matrix row. An equal combined set of labels does not establish equal runner selections.
 When only the combinations change, WF005 includes the individual `targets` in
