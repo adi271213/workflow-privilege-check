@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 0.0.4 — 2026-10-30
+
+- Fix expression identifier boundaries: hyphenated properties such as
+  `inputs.use-secrets` no longer invent whole-secret access or hide a newly
+  added literal secret reference. Preserve complete literal property names.
+- Resolve hyphenated direct matrix fields for runner/environment comparisons,
+  including WF008 associations; retain existing uncertainty for dynamic values.
+- Store hosted contract fixtures in this repository and create their Git objects
+  locally. Add identifier regressions to the hosted contract and isolated smoke
+  test; remove the contract's dependency on the disposable pilot repository.
+- Correct the 0.0.3 evidence count: six isolated outcomes per Python version,
+  24 across its four-version matrix. Its separate hosted contract had 24 jobs.
+
 ## 0.0.3 — 2026-10-30
 
 - Add WF008 for new runner/environment pairings in bounded static matrices when

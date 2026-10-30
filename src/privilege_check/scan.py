@@ -6,6 +6,7 @@ import yaml
 
 from .sources import MAX_FILE, Snapshot
 from .contexts import compare_contexts
+from .expressions import IDENTIFIER
 from .yaml_limits import MAX_ALIASES, validate_graph
 
 LEVELS = {"none": 0, "read": 1, "write": 2}
@@ -24,7 +25,7 @@ REVIEW_TRIGGERS = {
     "pull_request_target", "workflow_run", "issue_comment", "issues",
     "discussion", "discussion_comment",
 }
-TOKEN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+TOKEN = re.compile(IDENTIFIER)
 LIMITATIONS = [
     "Compares supported configured capabilities, not actual runtime access or PR safety.",
     "Does not inspect executed scripts, remote actions/workflows, cloud trust, or environment guards.",
@@ -195,8 +196,8 @@ def _secret_expression(expression: str) -> tuple[set[str], bool]:
         if match.group().lower() != "secrets" or previous.endswith("."):
             continue
         tail = expression[i:]
-        dotted = re.match(r"\s*\.\s*([A-Za-z_][A-Za-z0-9_]*)", tail)
-        bracket = re.match(r"\s*\[\s*'([A-Za-z_][A-Za-z0-9_]*)'\s*\]", tail)
+        dotted = re.match(r"\s*\.\s*(" + IDENTIFIER + r")", tail)
+        bracket = re.match(r"\s*\[\s*'(" + IDENTIFIER + r")'\s*\]", tail)
         if dotted or bracket:
             found = dotted or bracket
             names.add(found.group(1).upper())

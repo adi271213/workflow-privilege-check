@@ -1,5 +1,5 @@
 name: Action outcome contract and review regressions
-'on': workflow_dispatch
+on: workflow_dispatch
 permissions:
   contents: read
 jobs:
@@ -9,141 +9,78 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode:
-        - advisory
-        - require-complete
+        mode: [advisory, require-complete]
         case:
-        - grants
-        - incomplete
-        - error
-        - missing
-        - secret-partial
-        - secret-base-unknown
-        - replace-commit
-        - replace-blob
-        - redirected
-        - alias-supported
-        - association
-        - association-unresolved
+          - grants
+          - incomplete
+          - error
+          - missing
+          - secret-partial
+          - secret-base-unknown
+          - replace-commit
+          - replace-blob
+          - redirected
+          - alias-supported
+          - association
+          - association-unresolved
+          - hyphen-neutral
+          - hyphen-secret
+          - hyphen-association
+          - hyphen-secret-prefix
     steps:
-    - name: Checkout public consumer objects
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      with:
-        repository: adi271213/workflow-privilege-check-pilot-20261024
-        ref: 17c331b0529a2f39c6d1db918c8ac876667090c0
-        fetch-depth: 0
-        persist-credentials: false
-    - name: Select fixed input or construct review regression
-      id: refs
-      env:
-        CASE: ${{ matrix.case }}
-      run: |
-        python3 -I - <<'PYCODE'
-        import os, subprocess
-        from pathlib import Path
-        case = os.environ['CASE']
-        heads = {'grants':'8c9cb54049173221ec1144643d2fc6f444b81b15',
-                 'incomplete':'95197686ac86c09e3c5aa5b6a4648c944b3cefbe',
-                 'alias-supported':'50ae76820802d731b68a5101ed9239e6c3dbceac', 'missing':'0'*40}
-        base = '17c331b0529a2f39c6d1db918c8ac876667090c0'
-        repo = Path(os.environ['GITHUB_WORKSPACE'])
-        if case in heads:
-            head = heads[case]
-            if case != 'missing':
-                subprocess.run(['git','-C',str(Path(os.environ['GITHUB_WORKSPACE'])),'fetch','--no-tags','origin',head], check=True)
-        else:
-            repo = Path(os.environ['RUNNER_TEMP']) / 'review-fixture'
-            repo.mkdir()
-            def git(*args):
-                return subprocess.check_output(['git','-C',str(repo),*args], text=True).strip()
-            git('init','-q','-b','main')
-            git('config','user.name','Review fixture')
-            git('config','user.email','review@example.invalid')
-            git('config','commit.gpgsign','false')
-            path = repo / '.github/workflows/ci.yml'
-            path.parent.mkdir(parents=True)
-            text = 'on: workflow_dispatch\npermissions: {}\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo fixture\n'
-            if case in ('association', 'association-unresolved'):
-                text = ('on: workflow_dispatch\npermissions: {}\njobs:\n  test:\n'
-                        '    strategy:\n      matrix:\n        include:\n'
-                        '          - runner: ubuntu-latest\n            target: production\n'
-                        '          - runner: self-hosted\n            target: staging\n'
-                        '    runs-on: EXPR_OPEN matrix.runner }}\n'
-                        '    environment: EXPR_OPEN matrix.target }}\n'
-                        '    steps: [{run: echo fixture}]\n')
-            if case == 'secret-base-unknown':
-                text = text.replace('echo fixture', 'echo EXPR_OPEN secrets[inputs.which] }}')
-            path.write_text(text.replace('EXPR_OPEN',chr(36)+'{{'))
-            git('add','.'); git('commit','-qm','base'); base=git('rev-parse','HEAD')
-            if case == 'error':
-                text = 'on: workflow_dispatch\njobs: [unclosed\n'
-            elif case == 'secret-partial':
-                text = text.replace('echo fixture', 'echo EXPR_OPEN secrets.NEW_TOKEN }} EXPR_OPEN secrets[inputs.which] }}')
-            elif case == 'secret-base-unknown':
-                text = text.replace('EXPR_OPEN secrets[inputs.which] }}', 'EXPR_OPEN secrets.NEW_TOKEN }}')
-            elif case == 'association':
-                text = (text.replace('target: production', 'target: temporary')
-                            .replace('target: staging', 'target: production')
-                            .replace('target: temporary', 'target: staging'))
-            elif case == 'association-unresolved':
-                text = text.replace('runner: ubuntu-latest', 'runner: {name: ubuntu-latest}')
-            else:
-                text = text.replace('permissions: {}', 'permissions: {contents: write}')
-            path.write_text(text.replace('EXPR_OPEN',chr(36)+'{{'))
-            git('commit','-qam','head'); head=git('rev-parse','HEAD')
-            if case == 'replace-commit': git('replace',head,base)
-            if case == 'replace-blob':
-                git('replace',git('rev-parse',head+':.github/workflows/ci.yml'),git('rev-parse',base+':.github/workflows/ci.yml'))
-        with open(os.environ['GITHUB_OUTPUT'],'a') as f:
-            f.write(f'base={base}\nhead={head}\nrepo={repo}\n')
-        PYCODE
-    - name: Run pinned Action mode
-      id: result
-      continue-on-error: true
-      uses: adi271213/workflow-privilege-check@5448750967e3bc7274b213866628fc61f1769882
-      with:
-        mode: ${{ matrix.mode }}
-        base: ${{ steps.refs.outputs.base }}
-        head: ${{ steps.refs.outputs.head }}
-        repository-path: ${{ steps.refs.outputs.repo }}
-      env:
-        GIT_DIR: ${{ matrix.case == 'redirected' && '/nonexistent/git-redirection' || '' }}
-        GIT_CONFIG_COUNT: ${{ matrix.case == 'redirected' && 'not-a-number' || '0' }}
-    - name: Assert the public outcome contract
-      if: always()
-      env:
-        CASE: ${{ matrix.case }}
-        MODE: ${{ matrix.mode }}
-        STEP_OUTCOME: ${{ steps.result.outcome }}
-        ANALYSIS: ${{ steps.result.outputs.analysis-status }}
-        REVIEW: ${{ steps.result.outputs.review-status }}
-        EXIT_CODE: ${{ steps.result.outputs.analysis-exit-code }}
-        FINDINGS: ${{ steps.result.outputs.finding-count }}
-        REPORT: ${{ steps.result.outputs.report-path }}
-        SUMMARY: ${{ steps.result.outputs.summary-path }}
-      run: |
-        python3 -I - <<'PYCODE'
-        import json, os
-        from pathlib import Path
-        case, mode = os.environ['CASE'], os.environ['MODE']
-        expected = {'grants':('complete','suggested',4),'incomplete':('incomplete','unknown',0),
-         'error':('error','unknown',0),'alias-supported':('complete','none',0),'missing':('error','unknown',0),
-         'secret-partial':('incomplete','suggested',1),'secret-base-unknown':('incomplete','unknown',0),
-         'replace-commit':('complete','suggested',1),'replace-blob':('complete','suggested',1),
-         'redirected':('complete','suggested',1), 'association':('complete','suggested',1),
-         'association-unresolved':('incomplete','unknown',0)}
-        state, review, count = expected[case]
-        exit_code = 0 if state == 'complete' else 2
-        outcome = 'failure' if mode == 'require-complete' and exit_code else 'success'
-        assert os.environ['STEP_OUTCOME'] == outcome, (case, mode, os.environ['STEP_OUTCOME'])
-        assert (os.environ['ANALYSIS'],os.environ['REVIEW'],int(os.environ['FINDINGS']),int(os.environ['EXIT_CODE'])) == (state,review,count,exit_code)
-        report = json.loads(Path(os.environ['REPORT']).read_text())
-        assert report['analysis'] == state and report['action']['reviewStatus'] == review
-        assert len(report['findings']) == count and Path(os.environ['SUMMARY']).is_file()
-        if case == 'secret-partial': assert [f['after'] for f in report['findings']] == ['NEW_TOKEN']
-        if case in ('replace-commit','replace-blob','redirected'):
-            assert [f['after'] for f in report['findings']] == [{'contents':'write'}]
-        if case == 'association': assert [f['rule'] for f in report['findings']] == ['WF008']
-        print('WPC_CONTRACT_RESULT=' + json.dumps({'case':case,'mode':mode,'analysis':state,'review':review,
-         'stepOutcome':outcome,'findings':count,'analysisExit':exit_code,'outputsAvailable':True,'reportsAvailable':True}))
-        PYCODE
+      - name: Checkout trusted contract sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Create local comparison objects
+        id: refs
+        env:
+          CASE: ${{ matrix.case }}
+        run: python3 -I scripts/hosted_fixture.py "$CASE"
+      - name: Run pinned Action mode
+        id: result
+        continue-on-error: true
+        uses: adi271213/workflow-privilege-check@ff12d9b482a55777815dd5a1391e058986259320 # v0.0.4
+        with:
+          mode: ${{ matrix.mode }}
+          base: ${{ steps.refs.outputs.base }}
+          head: ${{ steps.refs.outputs.head }}
+          repository-path: ${{ steps.refs.outputs.repo }}
+        env:
+          GIT_DIR: ${{ matrix.case == 'redirected' && '/nonexistent/git-redirection' || '' }}
+          GIT_CONFIG_COUNT: ${{ matrix.case == 'redirected' && 'not-a-number' || '0' }}
+      - name: Assert the public outcome contract
+        if: always()
+        env:
+          CASE: ${{ matrix.case }}
+          MODE: ${{ matrix.mode }}
+          STEP_OUTCOME: ${{ steps.result.outcome }}
+          ANALYSIS: ${{ steps.result.outputs.analysis-status }}
+          REVIEW: ${{ steps.result.outputs.review-status }}
+          EXIT_CODE: ${{ steps.result.outputs.analysis-exit-code }}
+          FINDINGS: ${{ steps.result.outputs.finding-count }}
+          REPORT: ${{ steps.result.outputs.report-path }}
+          SUMMARY: ${{ steps.result.outputs.summary-path }}
+        run: |
+          python3 -I - <<'PYCODE'
+          import json, os
+          from pathlib import Path
+          case, mode = os.environ['CASE'], os.environ['MODE']
+          expected = json.loads(Path('tests/hosted_cases.json').read_text())[case]
+          state, review, count = expected['analysis'], expected['review'], len(expected['rules'])
+          exit_code = 0 if state == 'complete' else 2
+          outcome = 'failure' if mode == 'require-complete' and exit_code else 'success'
+          assert os.environ['STEP_OUTCOME'] == outcome, (case, mode, os.environ['STEP_OUTCOME'])
+          assert (os.environ['ANALYSIS'], os.environ['REVIEW'], int(os.environ['FINDINGS']), int(os.environ['EXIT_CODE'])) == (state, review, count, exit_code)
+          report = json.loads(Path(os.environ['REPORT']).read_text())
+          assert report['analysis'] == state and report['action']['reviewStatus'] == review
+          assert sorted(f['rule'] for f in report['findings']) == sorted(expected['rules'])
+          assert Path(os.environ['SUMMARY']).is_file()
+          if 'secrets' in expected:
+              assert sorted(f['after'] for f in report['findings'] if f['rule'] == 'WF004') == sorted(expected['secrets'])
+          if case in ('replace-commit', 'replace-blob', 'redirected'):
+              assert [f['after'] for f in report['findings']] == [{'contents': 'write'}]
+          print('WPC_CONTRACT_RESULT=' + json.dumps({'case': case, 'mode': mode, 'analysis': state, 'review': review,
+              'stepOutcome': outcome, 'findings': count, 'analysisExit': exit_code,
+              'outputsAvailable': True, 'reportsAvailable': True}))
+          PYCODE

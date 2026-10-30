@@ -6,7 +6,8 @@ Package and module versions agree at 0.0.3.
 ## Completed checks
 
 - [CI on Python 3.11–3.14](https://github.com/adi271213/workflow-privilege-check/actions/runs/41025491412):
-  170 tests and 24 network-isolated Action controller outcomes per interpreter.
+  170 tests and six network-isolated Action controller outcomes per interpreter
+  (24 isolated outcomes across the four-version CI matrix).
 - [Hosted Action contract](https://github.com/adi271213/workflow-privilege-check/actions/runs/41025483978):
   24 jobs passed (12 cases in both advisory and require-complete modes), using
   the runtime pin above. Cases include WF008, unresolved associations, supported
